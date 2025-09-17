@@ -21,8 +21,12 @@ export default function Header() {
           <UserButton />
         </Authenticated>
         <Unauthenticated>
-          <SignInButton />
-          <SignUpButton />
+          <Link href={"/auth/sign-in"}>
+            <Button variant={"outline"}>Sign In</Button>
+          </Link>
+          <Link href={"/auth/sign-up"}>
+            <Button>Sign Up</Button>
+          </Link>
         </Unauthenticated>
       </div>
     </header>
