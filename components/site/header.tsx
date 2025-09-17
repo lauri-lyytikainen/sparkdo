@@ -1,10 +1,14 @@
 "use client";
 import Link from "next/link";
 import { Authenticated, Unauthenticated } from "convex/react";
-import { SignUpButton, SignInButton, UserButton } from "@clerk/nextjs";
+import { UserButton } from "@clerk/nextjs";
 import { Button } from "../ui/button";
+import { useConvexAuth } from "convex/react";
+import { Skeleton } from "../ui/skeleton";
+import { Loader2Icon } from "lucide-react";
 
 export default function Header() {
+  const { isLoading } = useConvexAuth();
   return (
     <header className="w-full flex justify-between items-center p-2">
       <Link href="/" className="flex items-center gap-2">
@@ -14,12 +18,22 @@ export default function Header() {
       <div className="flex items-center gap-2">
         <Authenticated>
           <Link href="/dashboard">
-            <Button variant="outline">
-              <p>Dashboard</p>
+            <Button variant="outline" size={"sm"}>
+              Dashboard
             </Button>
           </Link>
-          <UserButton />
+          <UserButton showName={true} userProfileUrl="/account" />
         </Authenticated>
+        {isLoading && (
+          <>
+            <Button variant="outline" size="sm" disabled>
+              <Loader2Icon className="animate-spin" />
+              Dashboard
+            </Button>
+            <Skeleton className="h-4 w-32" />
+            <Skeleton className="h-8 w-8 rounded-full" />
+          </>
+        )}
         <Unauthenticated>
           <Link href={"/auth/sign-in"}>
             <Button variant={"outline"}>Sign In</Button>

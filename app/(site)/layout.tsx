@@ -7,7 +7,7 @@ export default function SiteLayout({
 }>) {
   return (
     <div className="flex flex-col min-h-screen">
-      <div className="mx-auto max-w-xl w-full flex-1 flex flex-col">
+      <div className="mx-auto w-full flex-1 flex flex-col items-center">
         <Header />
         <main className="flex-1 p-2">{children}</main>
         <p>Footer</p>
