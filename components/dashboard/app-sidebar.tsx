@@ -5,6 +5,8 @@ import {
   AudioWaveform,
   BookOpen,
   Bot,
+  Calendar,
+  CircleCheck,
   Command,
   Frame,
   GalleryVerticalEnd,
@@ -12,6 +14,7 @@ import {
   PieChart,
   Settings2,
   SquareTerminal,
+  Sun,
 } from "lucide-react";
 
 import { NavMain } from "@/components/dashboard/nav-main";
@@ -52,89 +55,19 @@ const data = {
   ],
   navMain: [
     {
-      title: "Playground",
-      url: "#",
-      icon: SquareTerminal,
-      isActive: true,
-      items: [
-        {
-          title: "History",
-          url: "#",
-        },
-        {
-          title: "Starred",
-          url: "#",
-        },
-        {
-          title: "Settings",
-          url: "#",
-        },
-      ],
+      title: "Today",
+      url: "/dashboard",
+      icon: Sun,
     },
     {
-      title: "Models",
-      url: "#",
-      icon: Bot,
-      items: [
-        {
-          title: "Genesis",
-          url: "#",
-        },
-        {
-          title: "Explorer",
-          url: "#",
-        },
-        {
-          title: "Quantum",
-          url: "#",
-        },
-      ],
+      title: "Upcoming",
+      url: "/dashboard/upcoming",
+      icon: Calendar,
     },
     {
-      title: "Documentation",
-      url: "#",
-      icon: BookOpen,
-      items: [
-        {
-          title: "Introduction",
-          url: "#",
-        },
-        {
-          title: "Get Started",
-          url: "#",
-        },
-        {
-          title: "Tutorials",
-          url: "#",
-        },
-        {
-          title: "Changelog",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Settings",
-      url: "#",
-      icon: Settings2,
-      items: [
-        {
-          title: "General",
-          url: "#",
-        },
-        {
-          title: "Team",
-          url: "#",
-        },
-        {
-          title: "Billing",
-          url: "#",
-        },
-        {
-          title: "Limits",
-          url: "#",
-        },
-      ],
+      title: "Completed",
+      url: "/dashboard/completed",
+      icon: CircleCheck,
     },
   ],
   projects: [

@@ -1,3 +1,3 @@
 export default function Dashboard() {
-  return <p>Dashboard</p>;
+  return <h1 className="text-2xl font-bold">Today</h1>;
 }
