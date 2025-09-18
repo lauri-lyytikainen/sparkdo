@@ -3,17 +3,14 @@
 import * as React from "react";
 import {
   AudioWaveform,
-  BookOpen,
-  Bot,
-  Calendar,
+  CalendarDays,
   CircleCheck,
   Command,
+  FileClock,
   Frame,
   GalleryVerticalEnd,
   Map,
   PieChart,
-  Settings2,
-  SquareTerminal,
   Sun,
 } from "lucide-react";
 
@@ -55,6 +52,11 @@ const data = {
   ],
   navMain: [
     {
+      title: "Unscheduled",
+      url: "/dashboard/unscheduled",
+      icon: FileClock,
+    },
+    {
       title: "Today",
       url: "/dashboard",
       icon: Sun,
@@ -62,7 +64,7 @@ const data = {
     {
       title: "Upcoming",
       url: "/dashboard/upcoming",
-      icon: Calendar,
+      icon: CalendarDays,
     },
     {
       title: "Completed",
