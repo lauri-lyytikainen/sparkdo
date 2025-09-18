@@ -25,73 +25,76 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar";
-
-// This is sample data.
-const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
-  teams: [
-    {
-      name: "Acme Inc",
-      logo: GalleryVerticalEnd,
-      plan: "Enterprise",
-    },
-    {
-      name: "Acme Corp.",
-      logo: AudioWaveform,
-      plan: "Startup",
-    },
-    {
-      name: "Evil Corp.",
-      logo: Command,
-      plan: "Free",
-    },
-  ],
-  navMain: [
-    {
-      title: "Unscheduled",
-      url: "/dashboard/unscheduled",
-      icon: FileClock,
-    },
-    {
-      title: "Today",
-      url: "/dashboard",
-      icon: Sun,
-    },
-    {
-      title: "Upcoming",
-      url: "/dashboard/upcoming",
-      icon: CalendarDays,
-    },
-    {
-      title: "Completed",
-      url: "/dashboard/completed",
-      icon: CircleCheck,
-    },
-  ],
-  projects: [
-    {
-      name: "Design Engineering",
-      url: "#",
-      icon: Frame,
-    },
-    {
-      name: "Sales & Marketing",
-      url: "#",
-      icon: PieChart,
-    },
-    {
-      name: "Travel",
-      url: "#",
-      icon: Map,
-    },
-  ],
-};
+import { useTaskContext } from "./task-provider";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { todayTaskCount } = useTaskContext();
+
+  const data = {
+    user: {
+      name: "shadcn",
+      email: "m@example.com",
+      avatar: "/avatars/shadcn.jpg",
+    },
+    teams: [
+      {
+        name: "Acme Inc",
+        logo: GalleryVerticalEnd,
+        plan: "Enterprise",
+      },
+      {
+        name: "Acme Corp.",
+        logo: AudioWaveform,
+        plan: "Startup",
+      },
+      {
+        name: "Evil Corp.",
+        logo: Command,
+        plan: "Free",
+      },
+    ],
+    navMain: [
+      {
+        title: "Unscheduled",
+        url: "/dashboard/unscheduled",
+        icon: FileClock,
+      },
+      {
+        title: "Today",
+        url: "/dashboard",
+        icon: Sun,
+        badgeCount: todayTaskCount,
+      },
+      {
+        title: "Upcoming",
+        url: "/dashboard/upcoming",
+        icon: CalendarDays,
+      },
+      {
+        title: "Completed",
+        url: "/dashboard/completed",
+        icon: CircleCheck,
+      },
+    ],
+    projects: [
+      {
+        name: "Design Engineering",
+        url: "#",
+        icon: Frame,
+      },
+      {
+        name: "Sales & Marketing",
+        url: "#",
+        icon: PieChart,
+      },
+      {
+        name: "Travel",
+        url: "#",
+        icon: Map,
+      },
+    ],
+  };
+
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>

@@ -7,6 +7,7 @@ import {
   SidebarGroup,
   SidebarGroupLabel,
   SidebarMenu,
+  SidebarMenuBadge,
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
@@ -20,6 +21,7 @@ export function NavMain({
     url: string;
     icon?: LucideIcon;
     isActive?: boolean;
+    badgeCount?: number;
   }[];
 }) {
   const pathname = usePathname();
@@ -41,6 +43,7 @@ export function NavMain({
                   {item.title}
                 </Link>
               </SidebarMenuButton>
+              <SidebarMenuBadge>{item.badgeCount}</SidebarMenuBadge>
             </SidebarMenuItem>
           );
         })}
