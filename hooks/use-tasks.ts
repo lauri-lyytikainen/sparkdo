@@ -4,6 +4,7 @@ import { Doc } from "../convex/_generated/dataModel";
 type Task = Doc<"tasks">;
 
 interface UseTasksResult {
+  unscheduledTasks: Task[] | undefined;
   overdueTasks: Task[] | undefined;
   todayTasks: Task[] | undefined;
   upcomingTasks: Task[] | undefined;
@@ -18,6 +19,7 @@ export function useTasks(): UseTasksResult {
 
   const { timeZone } = Intl.DateTimeFormat().resolvedOptions();
 
+  const unscheduledTasks = useQuery(api.tasks.getUnscheduledTasks);
   const overdueTasks = useQuery(api.tasks.getOverdueTasks, { timeZone });
   const todayTasks = useQuery(api.tasks.getTodayTasks, { timeZone });
   const upcomingTasks = useQuery(api.tasks.getUpcomingTasks, { timeZone });
@@ -30,6 +32,7 @@ export function useTasks(): UseTasksResult {
     completedTasks === undefined;
 
   return {
+    unscheduledTasks,
     overdueTasks,
     todayTasks,
     upcomingTasks,

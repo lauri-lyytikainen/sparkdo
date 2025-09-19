@@ -51,11 +51,12 @@ export const getOverdueTasks = query({
 
     const tasks = await ctx.db
       .query("tasks")
-      .filter((q) => q.eq(q.field("author"), identity.tokenIdentifier))
-      .filter((q) => q.lt(q.field("dueDate"), today))
-      .filter((q) => q.eq(q.field("isCompleted"), false))
-      // Ordered by _creationTime, return most recent
-      .order("desc")
+      .withIndex("by_author_isCompleted_dueDate", (q) =>
+        q.eq("author", identity.tokenIdentifier)
+          .eq("isCompleted", false)
+          .lt("dueDate", today))
+      // Ordered by dueDate ascending (most urgent first), then by creation time
+      .order("asc")
       .collect();
     return tasks;
   },
@@ -81,10 +82,12 @@ export const getTodayTasks = query({
 
     const tasks = await ctx.db
       .query("tasks")
-      .filter((q) => q.eq(q.field("author"), identity.tokenIdentifier))
-      .filter((q) => q.eq(q.field("dueDate"), today))
-      // Ordered by _creationTime, return most recent
-      .order("desc")
+      .withIndex("by_author_isCompleted_dueDate", (q) =>
+        q.eq("author", identity.tokenIdentifier)
+          .eq("isCompleted", false)
+          .eq("dueDate", today))
+      // Ordered by dueTime if available, then by creation time
+      .order("asc")
       .collect();
     return tasks;
   },
@@ -111,10 +114,10 @@ export const getUpcomingTasks = query({
 
     const tasks = await ctx.db
       .query("tasks")
-      .filter((q) => q.eq(q.field("author"), identity.tokenIdentifier))
-      // Only tasks with a dueDate strictly later than today
-      .filter((q) => q.gt(q.field("dueDate"), today))
-      .filter((q) => q.eq(q.field("isCompleted"), false))
+      .withIndex("by_author_isCompleted_dueDate", (q) =>
+        q.eq("author", identity.tokenIdentifier)
+          .eq("isCompleted", false)
+          .gt("dueDate", today))
       // Show soonest first
       .order("asc")
       .collect();
@@ -134,11 +137,35 @@ export const getCompletedTasks = query({
     }
     const tasks = await ctx.db
       .query("tasks")
-      .filter((q) => q.eq(q.field("author"), identity.tokenIdentifier))
-      .filter((q) => q.eq(q.field("isCompleted"), true))
+      .withIndex("by_author_isCompleted_dueDate", (q) =>
+        q.eq("author", identity.tokenIdentifier)
+          .eq("isCompleted", true))
       // Ordered by _creationTime, return most recent
       .order("desc")
       .take(args.limit);
+    return tasks;
+  },
+});
+
+// Add this new query for unscheduled tasks (tasks without a due date)
+export const getUnscheduledTasks = query({
+  args: {},
+
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw Error("Not signed in");
+    }
+
+    const tasks = await ctx.db
+      .query("tasks")
+      .withIndex("by_author_isCompleted", (q) =>
+        q.eq("author", identity.tokenIdentifier)
+          .eq("isCompleted", false))
+      .filter((q) => q.eq(q.field("dueDate"), undefined))
+      // Ordered by creation time, most recent first
+      .order("desc")
+      .collect();
     return tasks;
   },
 });
