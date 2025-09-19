@@ -25,6 +25,7 @@ export function useTasks(): UseTasksResult {
   const upcomingTasks = useQuery(api.tasks.getUpcomingTasks, { timeZone });
   const completedTasks = useQuery(api.tasks.getCompletedTasks, { limit: 100 }); // Example: limit for dashboard overview
 
+
   const isLoading =
     overdueTasks === undefined ||
     todayTasks === undefined ||

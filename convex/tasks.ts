@@ -169,3 +169,65 @@ export const getUnscheduledTasks = query({
     return tasks;
   },
 });
+
+export const completeTask = mutation({
+  args: {
+    taskId: v.id("tasks"),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw Error("Not signed in");
+    }
+
+    // First, verify the task exists and belongs to the user
+    const task = await ctx.db.get(args.taskId);
+    if (!task) {
+      throw new Error("Task not found");
+    }
+    if (task.author !== identity.tokenIdentifier) {
+      throw new Error("Unauthorized: Task does not belong to user");
+    }
+
+    // Update the task to mark it as completed
+    await ctx.db.patch(args.taskId, {
+      isCompleted: true,
+      completedAt: new Date().toISOString(),
+    });
+
+    console.log("Completed task with id:", args.taskId);
+    return null;
+  },
+});
+
+export const uncompleteTask = mutation({
+  args: {
+    taskId: v.id("tasks"),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw Error("Not signed in");
+    }
+
+    // First, verify the task exists and belongs to the user
+    const task = await ctx.db.get(args.taskId);
+    if (!task) {
+      throw new Error("Task not found");
+    }
+    if (task.author !== identity.tokenIdentifier) {
+      throw new Error("Unauthorized: Task does not belong to user");
+    }
+
+    // Update the task to mark it as not completed
+    await ctx.db.patch(args.taskId, {
+      isCompleted: false,
+      completedAt: undefined,
+    });
+
+    console.log("Uncompleted task with id:", args.taskId);
+    return null;
+  },
+});
