@@ -2,9 +2,9 @@
 import Link from "next/link";
 import { Authenticated, Unauthenticated } from "convex/react";
 import { UserButton } from "@clerk/nextjs";
-import { Button } from "../ui/button";
+import { Button } from "@/components/ui/button";
 import { useConvexAuth } from "convex/react";
-import { Skeleton } from "../ui/skeleton";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Loader2Icon } from "lucide-react";
 
 export default function Header() {

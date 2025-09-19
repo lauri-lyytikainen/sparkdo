@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext } from "react";
-import { useTasks } from "../../hooks/use-tasks";
+import { useTasks } from "@/hooks/use-tasks";
 
 type TaskContextValue = ReturnType<typeof useTasks>;
 
