@@ -55,6 +55,7 @@ export const getOverdueTasks = query({
         q.eq("author", identity.tokenIdentifier)
           .eq("isCompleted", false)
           .lt("dueDate", today))
+      .filter((q) => q.neq(q.field("dueDate"), undefined))
       // Ordered by dueDate ascending (most urgent first), then by creation time
       .order("asc")
       .collect();
@@ -86,6 +87,8 @@ export const getTodayTasks = query({
         q.eq("author", identity.tokenIdentifier)
           .eq("isCompleted", false)
           .eq("dueDate", today))
+      // Filter out tasks without a dueDate (redundant but explicit)
+      .filter((q) => q.neq(q.field("dueDate"), undefined))
       // Ordered by dueTime if available, then by creation time
       .order("asc")
       .collect();
@@ -118,6 +121,8 @@ export const getUpcomingTasks = query({
         q.eq("author", identity.tokenIdentifier)
           .eq("isCompleted", false)
           .gt("dueDate", today))
+      // Filter out tasks without a dueDate (they should be in unscheduled)
+      .filter((q) => q.neq(q.field("dueDate"), undefined))
       // Show soonest first
       .order("asc")
       .collect();

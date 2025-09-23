@@ -7,10 +7,21 @@ import TaskComponent from "@/components/dashboard/task-component";
 import NewTaskButton from "@/components/dashboard/new-task-button";
 
 export default function Today() {
-  const { todayTasks, isLoading } = useTaskContext();
+  const { todayTasks, overdueTasks, isLoading } = useTaskContext();
   return (
     <div>
       <h1 className="text-2xl font-bold my-2">Today</h1>
+      {overdueTasks && overdueTasks.length > 0 && (
+        <>
+          <h2 className="text-xl font-bold my-2 text-red-500">Overdue</h2>
+          {!isLoading && (
+            overdueTasks?.map((task: Task) => (
+              <TaskComponent task={task} key={task._id} overdue />
+            ))
+          )}
+          <h2 className="text-xl font-bold my-2">Rest of todays tasks</h2>
+        </>
+      )}
       {!isLoading && (
         todayTasks?.map((task: Task) => (
           <TaskComponent task={task} key={task._id} />
