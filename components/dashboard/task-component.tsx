@@ -3,6 +3,8 @@ import { Checkbox } from "../ui/checkbox";
 type Task = Doc<"tasks">;
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import { Calendar } from "lucide-react";
+import { formatTaskDateAndTime } from "@/utils/date-utils";
 
 export default function TaskComponent({ task }: { task: Task }) {
   const completeTaskMutation = useMutation(api.tasks.completeTask);
@@ -25,6 +27,14 @@ export default function TaskComponent({ task }: { task: Task }) {
         <p className="text-sm">
           {task.description}
         </p>
+        {task.dueDate && (
+          <div className="flex gap-1 items-center">
+            <Calendar className="w-4" />
+            <p className="text-sm">
+              {formatTaskDateAndTime(task.dueDate, task.dueTime)}
+            </p>
+          </div>
+        )}
       </div>
     </div>
   )
