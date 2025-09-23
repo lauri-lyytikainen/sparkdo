@@ -10,7 +10,7 @@ export default function Unscheduled() {
   const { unscheduledTasks, isLoading } = useTaskContext();
   return (
     <div>
-      <h1 className="text-2xl font-bold">Unscheduled</h1>
+      <h1 className="text-2xl font-bold my-2">Unscheduled</h1>
       {!isLoading && (
         unscheduledTasks?.map((task: Task) => (
           <TaskComponent task={task} key={task._id} />

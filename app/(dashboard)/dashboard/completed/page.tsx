@@ -1,3 +1,21 @@
+"use client";
+
+import { useTaskContext } from "@/components/dashboard/task-provider";
+import { Doc } from "@/convex/_generated/dataModel";
+type Task = Doc<"tasks">;
+import TaskComponent from "@/components/dashboard/task-component";
+import NewTaskButton from "@/components/dashboard/new-task-button";
+
 export default function Completed() {
-  return <h1 className="text-2xl font-bold">Completed</h1>;
+  const { completedTasks, isLoading } = useTaskContext();
+  return (
+    <div>
+      <h1 className="text-2xl font-bold my-2">Completed</h1>
+      {!isLoading && (
+        completedTasks?.map((task: Task) => (
+          <TaskComponent task={task} key={task._id} />
+        ))
+      )}
+    </div>
+  );
 }
