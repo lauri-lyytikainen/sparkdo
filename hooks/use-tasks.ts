@@ -9,6 +9,7 @@ interface UseTasksResult {
   todayTasks: Task[] | undefined;
   upcomingTasks: Task[] | undefined;
   completedTasks: Task[] | undefined; // Maybe limited to a few
+  unscheduledTaskCount: number | undefined;
   todayTaskCount: number | undefined;
   upcomingTaskCount: number | undefined;
   isLoading: boolean;
@@ -38,7 +39,8 @@ export function useTasks(): UseTasksResult {
     todayTasks,
     upcomingTasks,
     completedTasks,
-    todayTaskCount: todayTasks?.length || 0,
+    unscheduledTaskCount: unscheduledTasks?.length || 0,
+    todayTaskCount: (todayTasks?.length || 0) + (overdueTasks?.length || 0),
     upcomingTaskCount: upcomingTasks?.length || 0,
     isLoading,
   };

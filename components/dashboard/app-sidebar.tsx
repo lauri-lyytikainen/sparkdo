@@ -28,7 +28,7 @@ import {
 import { useTaskContext } from "./task-provider";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { todayTaskCount, upcomingTaskCount } = useTaskContext();
+  const { unscheduledTaskCount, todayTaskCount, upcomingTaskCount } = useTaskContext();
 
   const data = {
     user: {
@@ -58,6 +58,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         title: "Unscheduled",
         url: "/dashboard/unscheduled",
         icon: FileClock,
+        badgeCount: unscheduledTaskCount || undefined,
       },
       {
         title: "Today",
