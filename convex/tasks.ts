@@ -25,9 +25,6 @@ export const addTask = mutation({
       dueTime: args.dueTime,
     });
 
-    console.log("Added new task with id:", id);
-    // Optionally, return a value from your mutation.
-    // return id;
   },
 });
 
@@ -201,7 +198,6 @@ export const completeTask = mutation({
       completedAt: new Date().toISOString(),
     });
 
-    console.log("Completed task with id:", args.taskId);
     return null;
   },
 });
@@ -232,7 +228,6 @@ export const uncompleteTask = mutation({
       completedAt: undefined,
     });
 
-    console.log("Uncompleted task with id:", args.taskId);
     return null;
   },
 });
@@ -269,7 +264,6 @@ export const updateTask = mutation({
       dueTime: args.dueTime,
     });
 
-    console.log("Updated task with id:", args.taskId);
     return null;
   },
 });
