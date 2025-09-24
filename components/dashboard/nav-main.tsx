@@ -38,7 +38,7 @@ export function NavMain({
               <SidebarMenuButton asChild isActive={isActive}>
                 <Link href={item.url} className="flex">
                   {item.icon && (
-                    <item.icon className={isActive ? "fill-current" : ""} />
+                    <item.icon />
                   )}
                   {item.title}
                 </Link>

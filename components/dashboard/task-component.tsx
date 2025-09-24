@@ -40,7 +40,7 @@ export default function TaskComponent({ task, overdue }: { task: Task, overdue?:
       </div>
       <div className="flex items-start h-full opacity-0 group-hover:opacity-100 transition-opacity">
         <Tooltip>
-          <TooltipTrigger>
+          <TooltipTrigger asChild>
             <Button size={"icon"} variant={"ghost"}>
               <Pen />
             </Button>
@@ -50,7 +50,7 @@ export default function TaskComponent({ task, overdue }: { task: Task, overdue?:
           </TooltipContent>
         </Tooltip>
         <Tooltip>
-          <TooltipTrigger>
+          <TooltipTrigger asChild>
             <Button size={"icon"} variant={"ghost"}>
               <Sun />
             </Button>
@@ -60,7 +60,7 @@ export default function TaskComponent({ task, overdue }: { task: Task, overdue?:
           </TooltipContent>
         </Tooltip>
         <Tooltip>
-          <TooltipTrigger>
+          <TooltipTrigger asChild>
             <Button size={"icon"} variant={"ghost"}>
               <Trash />
             </Button>
