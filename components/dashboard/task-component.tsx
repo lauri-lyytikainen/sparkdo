@@ -1,10 +1,12 @@
 import { Doc } from "@/convex/_generated/dataModel";
-import { Checkbox } from "../ui/checkbox";
+import { Checkbox } from "@/components/ui/checkbox";
 type Task = Doc<"tasks">;
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { Calendar } from "lucide-react";
+import { Calendar, Pen, Sun, Trash } from "lucide-react";
 import { formatTaskDateAndTime } from "@/utils/date-utils";
+import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 export default function TaskComponent({ task, overdue }: { task: Task, overdue?: boolean }) {
   const completeTaskMutation = useMutation(api.tasks.completeTask);
@@ -18,9 +20,9 @@ export default function TaskComponent({ task, overdue }: { task: Task, overdue?:
     }
   }
   return (
-    <div className="rounded p-2 my-2 flex gap-4 items-center border-b">
-      <Checkbox checked={task.isCompleted} onClick={handleCheckboxChange} />
-      <div className="flex-col justify-between items-center">
+    <div className="rounded p-2 my-2 flex gap-4 items-stretch border-b group">
+      <Checkbox checked={task.isCompleted} onClick={handleCheckboxChange} className="mt-2" />
+      <div className="flex-col justify-between items-center flex-1">
         <h2 className={`text-lg font-semibold ${overdue ? "text-red-500" : ""}`}>
           {task.title}
         </h2>
@@ -35,6 +37,39 @@ export default function TaskComponent({ task, overdue }: { task: Task, overdue?:
             </p>
           </div>
         )}
+      </div>
+      <div className="flex items-start h-full opacity-0 group-hover:opacity-100 transition-opacity">
+        <Tooltip>
+          <TooltipTrigger>
+            <Button size={"icon"} variant={"ghost"}>
+              <Pen />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            Edit Task
+          </TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger>
+            <Button size={"icon"} variant={"ghost"}>
+              <Sun />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            Set Due Date
+          </TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger>
+            <Button size={"icon"} variant={"ghost"}>
+              <Trash />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            Delete Task
+          </TooltipContent>
+        </Tooltip>
+
       </div>
     </div>
   )

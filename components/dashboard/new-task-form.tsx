@@ -32,6 +32,7 @@ import {
 import { Calendar } from "@/components/ui/calendar";
 import { parseDate, parse } from "chrono-node";
 import { useEffect, useState, useRef } from "react";
+import { formatTaskDateAndTime } from "@/utils/date-utils";
 
 function getTimeExpressions(text: string, referenceDate: Date) {
   const results = parse(text, referenceDate, { forwardDate: true });
@@ -68,12 +69,12 @@ function StyledTitleInput({ value, onChange, timeExpressions, ...props }: {
           isTime: false
         });
       }
-      
+
       segments.push({
         text: expr.text,
         isTime: true
       });
-      
+
       currentIndex = expr.end;
     });
 
@@ -93,7 +94,7 @@ function StyledTitleInput({ value, onChange, timeExpressions, ...props }: {
     <div className="relative">
       {/* Styled display overlay - always visible when there are time expressions */}
       {value && timeExpressions.length > 0 && (
-        <div 
+        <div
           className={`${props.className} absolute inset-0 flex items-center pointer-events-none`}
         >
           {segments.map((segment, index) => (
@@ -106,7 +107,7 @@ function StyledTitleInput({ value, onChange, timeExpressions, ...props }: {
           ))}
         </div>
       )}
-      
+
       {/* Actual input - transparent background to show styled overlay underneath */}
       <input
         {...props}
@@ -116,14 +117,14 @@ function StyledTitleInput({ value, onChange, timeExpressions, ...props }: {
         onFocus={() => setIsEditing(true)}
         onBlur={() => setIsEditing(false)}
         className={`${props.className} relative z-10 ${timeExpressions.length > 0 ? 'text-transparent' : ''}`}
-        style={{ 
+        style={{
           caretColor: 'black'
         }}
       />
-      
+
       {/* Clickable overlay when not editing */}
       {!isEditing && value && timeExpressions.length > 0 && (
-        <div 
+        <div
           className="absolute inset-0 cursor-text"
           onClick={() => {
             if (inputRef.current) {
@@ -139,9 +140,10 @@ function StyledTitleInput({ value, onChange, timeExpressions, ...props }: {
 
 interface NewTaskFormProps {
   onCancel: () => void;
+  todayPrefill?: boolean;
 }
 
-export function NewTaskForm({ onCancel }: NewTaskFormProps) {
+export function NewTaskForm({ onCancel, todayPrefill }: NewTaskFormProps) {
   const addTask = useMutation(api.tasks.addTask);
   const today = new Date();
 
@@ -166,7 +168,7 @@ export function NewTaskForm({ onCancel }: NewTaskFormProps) {
     defaultValues: {
       title: "",
       description: "",
-      dueDate: undefined,
+      dueDate: todayPrefill ? today : undefined,
       dueTime: undefined,
     },
   });
@@ -185,17 +187,17 @@ export function NewTaskForm({ onCancel }: NewTaskFormProps) {
       if (results.length > 0) {
         // Create clean title by removing time expressions
         let titleWithoutTime = title;
-        
+
         // Loop through all results to remove all time expressions
         results.forEach(result => {
           const timeText = title.substring(result.index, result.index + result.text.length);
           titleWithoutTime = titleWithoutTime.replace(timeText, '').trim();
         });
-        
+
         // Clean up extra spaces
         titleWithoutTime = titleWithoutTime.replace(/\s+/g, ' ').trim();
         setCleanTitle(titleWithoutTime);
-        
+
         // Find the most complete result (with most date/time information)
         const bestResult = results.reduce((best, current) => {
           // Prefer results with time information
@@ -205,18 +207,18 @@ export function NewTaskForm({ onCancel }: NewTaskFormProps) {
           // If both or neither have time, prefer the first one (usually most complete)
           return best;
         });
-        
+
         const date = bestResult.start.date();
         form.setValue("dueDate", date);
-        
+
         // If time is present, set dueTime as well
         if (bestResult.start.isCertain("hour")) {
           const hour = bestResult.start.get("hour");
           const minute = bestResult.start.get("minute") || 0;
           setLocalTimeString(
             hour!.toString().padStart(2, "0") +
-              ":" +
-              minute.toString().padStart(2, "0"),
+            ":" +
+            minute.toString().padStart(2, "0"),
           );
           const localDate = new Date();
           localDate.setHours(hour!, minute, 0, 0);
@@ -247,9 +249,9 @@ export function NewTaskForm({ onCancel }: NewTaskFormProps) {
     const timeString = values.dueTime
       ? values.dueTime.toISOString().split("T")[1]
       : undefined;
-    
+
     const finalTitle = cleanTitle || values.title;
-    
+
     addTask({
       title: finalTitle,
       description: values.description,
@@ -258,6 +260,9 @@ export function NewTaskForm({ onCancel }: NewTaskFormProps) {
     });
     form.reset();
     setCleanTitle("");
+    if (todayPrefill) {
+      form.setValue("dueDate", today);
+    }
   }
 
   function setDateToParsedDate(text: string) {
@@ -289,7 +294,7 @@ export function NewTaskForm({ onCancel }: NewTaskFormProps) {
                     timeExpressions={getTimeExpressions(field.value, today)}
                   />
                 </FormControl>
-                
+
                 <FormMessage />
               </FormItem>
             )}
@@ -324,9 +329,10 @@ export function NewTaskForm({ onCancel }: NewTaskFormProps) {
                 >
                   <CalendarIcon />
                   {form.watch("dueDate")
-                    ? `${form.watch("dueDate")?.toLocaleDateString()}${
-                        form.watch("dueTime") ? ` at ${localTimeString}` : ""
-                      }`
+                    ? `${formatTaskDateAndTime(
+                      form.watch("dueDate")?.toISOString().split("T")[0],
+                      form.watch("dueTime") ? localTimeString : undefined
+                    )}`
                     : "Date"}
                 </Button>
               </DropdownMenuTrigger>
@@ -381,10 +387,10 @@ export function NewTaskForm({ onCancel }: NewTaskFormProps) {
                             value={
                               field.value instanceof Date
                                 ? field.value.toLocaleTimeString([], {
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                    hour12: false,
-                                  })
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                  hour12: false,
+                                })
                                 : ""
                             }
                             onChange={(e) => {

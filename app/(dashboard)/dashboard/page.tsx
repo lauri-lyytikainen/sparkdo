@@ -27,7 +27,7 @@ export default function Today() {
           <TaskComponent task={task} key={task._id} />
         ))
       )}
-      <NewTaskButton />
+      <NewTaskButton todayPrefill={true} />
     </div>
   );
 }
