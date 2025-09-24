@@ -43,6 +43,16 @@ function getTimeExpressions(text: string, referenceDate: Date) {
   }));
 }
 
+function handleEnterKeySubmit(e: React.KeyboardEvent<HTMLInputElement>) {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    const formElement = e.currentTarget.form;
+    if (formElement) {
+      formElement.requestSubmit();
+    }
+  }
+}
+
 function StyledTitleInput({ value, onChange, timeExpressions, ...props }: {
   value: string;
   onChange: (value: string) => void;
@@ -120,6 +130,7 @@ function StyledTitleInput({ value, onChange, timeExpressions, ...props }: {
         style={{
           caretColor: 'black'
         }}
+        onKeyDown={handleEnterKeySubmit}
       />
 
       {/* Clickable overlay when not editing */}
@@ -276,7 +287,7 @@ export function NewTaskForm({ onCancel, todayPrefill }: NewTaskFormProps) {
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className="flex flex-1 flex-col bg-card rounded-xl border p-2 gap-2 pt-0"
+        className="flex flex-1 flex-col bg-card rounded-xl border p-2 gap-2"
       >
         <div>
           <FormField
@@ -308,6 +319,7 @@ export function NewTaskForm({ onCancel, todayPrefill }: NewTaskFormProps) {
                   <Input
                     className="p-0 border-none shadow-none font-light focus:border-transparent focus:ring-0 focus:outline-none focus-visible:border-transparent focus-visible:ring-0 focus-visible:outline-none"
                     placeholder="Description"
+                    onKeyDown={handleEnterKeySubmit}
                     {...field}
                   />
                 </FormControl>
