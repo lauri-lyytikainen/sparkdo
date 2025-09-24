@@ -9,11 +9,23 @@ import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useTaskContext } from "@/components/dashboard/task-provider";
 import { NewTaskForm } from "@/components/dashboard/new-task-form";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 export default function TaskComponent({ task, overdue }: { task: Task, overdue?: boolean }) {
   const completeTaskMutation = useMutation(api.tasks.completeTask);
   const uncompleteTaskMutation = useMutation(api.tasks.uncompleteTask);
   const { startEditing, stopEditing, isEditing } = useTaskContext();
+  const deleteTaskMutation = useMutation(api.tasks.deleteTask);
+
 
   function handleCheckboxChange() {
     if (task.isCompleted) {
@@ -48,6 +60,14 @@ export default function TaskComponent({ task, overdue }: { task: Task, overdue?:
     <div className="rounded p-2 my-2 flex gap-4 items-stretch border-b group">
       <Checkbox checked={task.isCompleted} onClick={handleCheckboxChange} className="mt-2" />
       <div className="flex-col justify-between items-center flex-1">
+        {task.dueDate && (
+          <div className="flex gap-1 items-center">
+            <Calendar className={`w-4 ${overdue ? "text-red-500" : ""}`} />
+            <p className={`text-sm ${overdue ? "text-red-500" : ""}`}>
+              {formatTaskDateAndTime(task.dueDate, task.dueTime)}
+            </p>
+          </div>
+        )}
         <h2 className={`text-lg font-semibold ${overdue ? "text-red-500" : ""}`}>
           {task.title}
         </h2>
@@ -84,17 +104,35 @@ export default function TaskComponent({ task, overdue }: { task: Task, overdue?:
             Set Due Date
           </TooltipContent>
         </Tooltip>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button size={"icon"} variant={"ghost"}>
-              <Trash />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            Delete Task
-          </TooltipContent>
-        </Tooltip>
-
+        <AlertDialog>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <AlertDialogTrigger asChild>
+                <Button size={"icon"} variant={"ghost"}>
+                  <Trash />
+                </Button>
+              </AlertDialogTrigger>
+            </TooltipTrigger>
+            <TooltipContent>
+              Delete Task
+            </TooltipContent>
+          </Tooltip>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>
+                Are you sure you want to delete "{task.title}" task?
+              </AlertDialogTitle>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={() => {
+                deleteTaskMutation({ taskId: task._id });
+              }}>
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
   )

@@ -273,3 +273,29 @@ export const updateTask = mutation({
     return null;
   },
 });
+
+export const deleteTask = mutation({
+  args: {
+    taskId: v.id("tasks"),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw Error("Not signed in");
+    }
+
+    // First, verify the task exists and belongs to the user
+    const task = await ctx.db.get(args.taskId);
+    if (!task) {
+      throw new Error("Task not found");
+    }
+    if (task.author !== identity.tokenIdentifier) {
+      throw new Error("Unauthorized: Task does not belong to user");
+    }
+
+    await ctx.db.delete(args.taskId);
+
+    return null;
+  }
+});

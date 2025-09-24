@@ -290,7 +290,7 @@ export function NewTaskForm({ onCancel, todayPrefill, editTask, isEditing }: New
         title: finalTitle,
         description: values.description,
         dueDate: dateString,
-        dueTime: timeString,
+        dueTime: dateString ? timeString : undefined,
       });
       onCancel();
     } else {
@@ -298,7 +298,7 @@ export function NewTaskForm({ onCancel, todayPrefill, editTask, isEditing }: New
         title: finalTitle,
         description: values.description,
         dueDate: dateString,
-        dueTime: timeString,
+        dueTime: dateString ? timeString : undefined,
       });
       form.reset();
       setCleanTitle("");
@@ -404,6 +404,7 @@ export function NewTaskForm({ onCancel, todayPrefill, editTask, isEditing }: New
                         <FormControl>
                           <Calendar
                             weekStartsOn={1}
+                            timeZone="UTC"
                             buttonVariant={"outline"}
                             mode="single"
                             // className="rounded-lg border"
