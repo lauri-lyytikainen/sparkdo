@@ -112,7 +112,7 @@ export default function TaskComponent({ task, overdue }: { task: Task, overdue?:
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>
-                Are you sure you want to delete "{task.title}" task?
+                Are you sure you want to delete &quot;{task.title}&quot; task?
               </AlertDialogTitle>
             </AlertDialogHeader>
             <AlertDialogFooter>

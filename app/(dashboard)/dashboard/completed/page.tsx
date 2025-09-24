@@ -4,7 +4,6 @@ import { useTaskContext } from "@/components/dashboard/task-provider";
 import { Doc } from "@/convex/_generated/dataModel";
 type Task = Doc<"tasks">;
 import TaskComponent from "@/components/dashboard/task-component";
-import NewTaskButton from "@/components/dashboard/new-task-button";
 
 export default function Completed() {
   const { completedTasks, isLoading } = useTaskContext();

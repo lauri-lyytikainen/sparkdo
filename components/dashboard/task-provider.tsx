@@ -2,7 +2,6 @@
 
 import { createContext, useContext, useState, useCallback } from "react";
 import { useTasks } from "@/hooks/use-tasks";
-import { Doc } from "@/convex/_generated/dataModel";
 
 interface TaskContextValue extends ReturnType<typeof useTasks> {
   editingTaskId: string | null;

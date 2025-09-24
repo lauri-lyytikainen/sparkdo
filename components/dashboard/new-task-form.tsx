@@ -56,12 +56,16 @@ function handleEnterKeySubmit(e: React.KeyboardEvent<HTMLInputElement>) {
   }
 }
 
-function StyledTitleInput({ value, onChange, timeExpressions, ...props }: {
+function StyledTitleInput({
+  value,
+  onChange,
+  timeExpressions,
+  ...props
+}: {
   value: string;
   onChange: (value: string) => void;
   timeExpressions: Array<{ start: number; end: number; text: string }>;
-  [key: string]: any;
-}) {
+} & React.InputHTMLAttributes<HTMLInputElement>) {
   const [isEditing, setIsEditing] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -162,7 +166,6 @@ interface NewTaskFormProps {
 export function NewTaskForm({ onCancel, todayPrefill, editTask, isEditing }: NewTaskFormProps) {
   const addTask = useMutation(api.tasks.addTask);
   const updateTask = useMutation(api.tasks.updateTask);
-  const today = new Date();
 
   const formSchema = z.object({
     title: z
@@ -185,7 +188,7 @@ export function NewTaskForm({ onCancel, todayPrefill, editTask, isEditing }: New
     defaultValues: {
       title: editTask?.title || "",
       description: editTask?.description || "",
-      dueDate: editTask?.dueDate ? new Date(editTask.dueDate) : (todayPrefill ? today : undefined),
+      dueDate: editTask?.dueDate ? new Date(editTask.dueDate) : (todayPrefill ? new Date() : undefined),
       dueTime: editTask?.dueTime ? convertUtcTimeToLocalDate(editTask.dueTime) : undefined,
     },
   });
@@ -199,7 +202,7 @@ export function NewTaskForm({ onCancel, todayPrefill, editTask, isEditing }: New
 
   useEffect(() => {
     if (title) {
-      const results = parse(title, today, { forwardDate: true });
+      const results = parse(title, new Date(), { forwardDate: true });
       // If we found a date, set it as dueDate
       if (results.length > 0) {
         // Create clean title by removing time expressions
@@ -257,7 +260,7 @@ export function NewTaskForm({ onCancel, todayPrefill, editTask, isEditing }: New
       setDateFromTitle(false);
       setCleanTitle("");
     }
-  }, [title]);
+  }, [title, dateFromTitle, form]);
 
   useEffect(() => {
     if (!isEditing) return;
@@ -303,13 +306,13 @@ export function NewTaskForm({ onCancel, todayPrefill, editTask, isEditing }: New
       form.reset();
       setCleanTitle("");
       if (todayPrefill) {
-        form.setValue("dueDate", today);
+        form.setValue("dueDate", new Date());
       }
     }
   }
 
   function setDateToParsedDate(text: string) {
-    const parsedDate = parseDate(text, today, { forwardDate: true });
+    const parsedDate = parseDate(text, new Date(), { forwardDate: true });
     if (parsedDate) {
       form.setValue("dueDate", parsedDate);
     }
@@ -334,7 +337,7 @@ export function NewTaskForm({ onCancel, todayPrefill, editTask, isEditing }: New
                     autoFocus
                     value={field.value}
                     onChange={field.onChange}
-                    timeExpressions={getTimeExpressions(field.value, today)}
+                    timeExpressions={getTimeExpressions(field.value, new Date())}
                   />
                 </FormControl>
 
