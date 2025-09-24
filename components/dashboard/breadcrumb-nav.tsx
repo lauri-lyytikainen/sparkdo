@@ -9,6 +9,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import Link from "next/link";
 
 export function BreadcrumbNav() {
   const pathname = usePathname();
@@ -49,7 +50,11 @@ export function BreadcrumbNav() {
     <Breadcrumb>
       <BreadcrumbList>
         <BreadcrumbItem className="hidden md:block">
-          <BreadcrumbLink href={parentPath}>{parentName}</BreadcrumbLink>
+          <BreadcrumbLink asChild>
+            <Link href={parentPath}>
+              {parentName}
+            </Link>
+          </BreadcrumbLink>
         </BreadcrumbItem>
         <BreadcrumbSeparator className="hidden md:block" />
         <BreadcrumbItem>
