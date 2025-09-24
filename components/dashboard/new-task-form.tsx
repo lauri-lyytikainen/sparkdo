@@ -32,7 +32,10 @@ import {
 import { Calendar } from "@/components/ui/calendar";
 import { parseDate, parse } from "chrono-node";
 import { useEffect, useState, useRef } from "react";
-import { formatTaskDateAndTime } from "@/utils/date-utils";
+import { convertFromUtcToLocal, convertUtcTimeToLocalDate, formatTaskDateAndTime } from "@/utils/date-utils";
+import { Doc } from "@/convex/_generated/dataModel";
+
+type Task = Doc<"tasks">;
 
 function getTimeExpressions(text: string, referenceDate: Date) {
   const results = parse(text, referenceDate, { forwardDate: true });
@@ -152,10 +155,13 @@ function StyledTitleInput({ value, onChange, timeExpressions, ...props }: {
 interface NewTaskFormProps {
   onCancel: () => void;
   todayPrefill?: boolean;
+  editTask?: Task;
+  isEditing?: boolean;
 }
 
-export function NewTaskForm({ onCancel, todayPrefill }: NewTaskFormProps) {
+export function NewTaskForm({ onCancel, todayPrefill, editTask, isEditing }: NewTaskFormProps) {
   const addTask = useMutation(api.tasks.addTask);
+  const updateTask = useMutation(api.tasks.updateTask);
   const today = new Date();
 
   const formSchema = z.object({
@@ -177,17 +183,17 @@ export function NewTaskForm({ onCancel, todayPrefill }: NewTaskFormProps) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      title: "",
-      description: "",
-      dueDate: todayPrefill ? today : undefined,
-      dueTime: undefined,
+      title: editTask?.title || "",
+      description: editTask?.description || "",
+      dueDate: editTask?.dueDate ? new Date(editTask.dueDate) : (todayPrefill ? today : undefined),
+      dueTime: editTask?.dueTime ? convertUtcTimeToLocalDate(editTask.dueTime) : undefined,
     },
   });
 
   const title = useWatch({ control: form.control, name: "title" });
   const [dateFromTitle, setDateFromTitle] = useState<boolean>(false);
   const [localTimeString, setLocalTimeString] = useState<string | undefined>(
-    undefined,
+    (editTask?.dueDate && editTask?.dueTime) ? convertFromUtcToLocal(editTask?.dueDate, editTask?.dueTime).localTimeString : undefined
   );
   const [cleanTitle, setCleanTitle] = useState<string>("");
 
@@ -253,6 +259,21 @@ export function NewTaskForm({ onCancel, todayPrefill }: NewTaskFormProps) {
     }
   }, [title]);
 
+  useEffect(() => {
+    if (!isEditing) return;
+
+    function handleEscapeKey(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        onCancel();
+      }
+    }
+    document.addEventListener('keydown', handleEscapeKey);
+
+    return () => {
+      document.removeEventListener('keydown', handleEscapeKey);
+    };
+  }, [isEditing, onCancel]);
+
   function onSubmit(values: z.infer<typeof formSchema>) {
     const dateString = values.dueDate
       ? values.dueDate.toISOString().split("T")[0]
@@ -263,16 +284,27 @@ export function NewTaskForm({ onCancel, todayPrefill }: NewTaskFormProps) {
 
     const finalTitle = cleanTitle || values.title;
 
-    addTask({
-      title: finalTitle,
-      description: values.description,
-      dueDate: dateString,
-      dueTime: timeString,
-    });
-    form.reset();
-    setCleanTitle("");
-    if (todayPrefill) {
-      form.setValue("dueDate", today);
+    if (isEditing && editTask) {
+      updateTask({
+        taskId: editTask._id,
+        title: finalTitle,
+        description: values.description,
+        dueDate: dateString,
+        dueTime: timeString,
+      });
+      onCancel();
+    } else {
+      addTask({
+        title: finalTitle,
+        description: values.description,
+        dueDate: dateString,
+        dueTime: timeString,
+      });
+      form.reset();
+      setCleanTitle("");
+      if (todayPrefill) {
+        form.setValue("dueDate", today);
+      }
     }
   }
 
@@ -478,7 +510,7 @@ export function NewTaskForm({ onCancel, todayPrefill }: NewTaskFormProps) {
               Cancel
             </Button>
             <Button size={"sm"} type={"submit"}>
-              Add task
+              {isEditing ? "Update task" : "Add task"}
             </Button>
           </div>
         </div>

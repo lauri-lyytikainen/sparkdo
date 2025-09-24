@@ -236,3 +236,40 @@ export const uncompleteTask = mutation({
     return null;
   },
 });
+
+export const updateTask = mutation({
+  args: {
+    taskId: v.id("tasks"),
+    title: v.string(),
+    description: v.string(),
+    dueDate: v.optional(v.string()),
+    dueTime: v.optional(v.string()),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw Error("Not signed in");
+    }
+
+    // First, verify the task exists and belongs to the user
+    const task = await ctx.db.get(args.taskId);
+    if (!task) {
+      throw new Error("Task not found");
+    }
+    if (task.author !== identity.tokenIdentifier) {
+      throw new Error("Unauthorized: Task does not belong to user");
+    }
+
+    // Update the task with new values
+    await ctx.db.patch(args.taskId, {
+      title: args.title,
+      description: args.description,
+      dueDate: args.dueDate,
+      dueTime: args.dueTime,
+    });
+
+    console.log("Updated task with id:", args.taskId);
+    return null;
+  },
+});

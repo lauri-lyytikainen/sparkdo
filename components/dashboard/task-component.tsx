@@ -7,10 +7,13 @@ import { Calendar, Pen, Sun, Trash } from "lucide-react";
 import { formatTaskDateAndTime } from "@/utils/date-utils";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { useTaskContext } from "@/components/dashboard/task-provider";
+import { NewTaskForm } from "@/components/dashboard/new-task-form";
 
 export default function TaskComponent({ task, overdue }: { task: Task, overdue?: boolean }) {
   const completeTaskMutation = useMutation(api.tasks.completeTask);
   const uncompleteTaskMutation = useMutation(api.tasks.uncompleteTask);
+  const { startEditing, stopEditing, isEditing } = useTaskContext();
 
   function handleCheckboxChange() {
     if (task.isCompleted) {
@@ -19,6 +22,28 @@ export default function TaskComponent({ task, overdue }: { task: Task, overdue?:
       completeTaskMutation({ taskId: task._id });
     }
   }
+
+  function handleEditClick() {
+    startEditing(task._id);
+  }
+
+  function handleCancelEdit() {
+    stopEditing();
+  }
+
+  // If this task is being edited, show the form instead
+  if (isEditing(task._id)) {
+    return (
+      <div className="my-2">
+        <NewTaskForm
+          editTask={task}
+          isEditing={true}
+          onCancel={handleCancelEdit}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="rounded p-2 my-2 flex gap-4 items-stretch border-b group">
       <Checkbox checked={task.isCompleted} onClick={handleCheckboxChange} className="mt-2" />
@@ -41,7 +66,7 @@ export default function TaskComponent({ task, overdue }: { task: Task, overdue?:
       <div className="flex items-start h-full opacity-0 group-hover:opacity-100 transition-opacity">
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button size={"icon"} variant={"ghost"}>
+            <Button size={"icon"} variant={"ghost"} onClick={handleEditClick}>
               <Pen />
             </Button>
           </TooltipTrigger>

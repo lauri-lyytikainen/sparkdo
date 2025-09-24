@@ -32,3 +32,27 @@ export function formatTaskDateAndTime(dateString: string | undefined, timeString
 
     return dateDisplay + (timeString ? (" " + time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })) : "");
 }
+
+export function convertFromUtcToLocal(dateString: string, timeString: string): { localDateString: string, localTimeString: string } {
+    const utcDate = new Date(dateString + "T" + timeString); // Treat as UTC
+    const localDateString = utcDate.toISOString().split('T')[0]; // YYYY-MM-DD
+    const localTimeString = utcDate.toTimeString().split(' ')[0].slice(0, 5); // HH:MM
+    return { localDateString, localTimeString };
+}
+
+export function convertFromLocalToUtc(dateString: string, timeString: string): { utcDateString: string, utcTimeString: string } {
+    const localDate = new Date(dateString + "T" + timeString);
+    const utcDate = new Date(localDate.getTime() + (localDate.getTimezoneOffset() * 60000));
+    const utcDateString = utcDate.toISOString().split('T')[0]; // YYYY-MM-DD
+    const utcTimeString = utcDate.toTimeString().split(' ')[0].slice(0, 5); // HH:MM
+    return { utcDateString, utcTimeString };
+}
+export function convertUtcTimeToLocalDate(utcIsoTimeString: string): Date {
+    // utcIsoTimeString should be in format "HH:mm:ss" or "HH:mm:ssZ" or "HH:mm"
+    const now = new Date();
+
+    const [hours, minutes, seconds] = utcIsoTimeString.replace('Z', '').split(':').map(Number);
+    const localDate = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, seconds || 0, 0));
+
+    return localDate;
+}
