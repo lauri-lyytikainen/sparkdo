@@ -9,7 +9,7 @@ export default defineSchema({
     isCompleted: v.boolean(),
     completedAt: v.optional(v.string()),
     dueDate: v.optional(v.string()),
-    dueTime: v.optional(v.string()),
+    hasDueTime: v.boolean(),
   })
     // Primary index for most common queries (by user, completion status, and due date)
     .index("by_author_isCompleted_dueDate", ["author", "isCompleted", "dueDate"])

@@ -70,7 +70,7 @@ export default function TaskComponent({ task, overdue }: { task: Task, overdue?:
           <div className="flex gap-1 items-center">
             <Calendar className={`w-4 ${overdue ? "text-red-500" : ""}`} />
             <p className={`text-sm ${overdue ? "text-red-500" : ""}`}>
-              {formatTaskDateAndTime(task.dueDate, task.dueTime)}
+              {task.dueDate ? formatTaskDateAndTime(new Date(task.dueDate), task.hasDueTime) : ""}
             </p>
           </div>
         )}

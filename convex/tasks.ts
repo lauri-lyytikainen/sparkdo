@@ -1,13 +1,12 @@
 import { v } from "convex/values";
-import { query, mutation, action } from "./_generated/server";
-import { api } from "./_generated/api";
+import { query, mutation } from "./_generated/server";
 
 export const addTask = mutation({
   args: {
     title: v.string(),
     description: v.string(),
     dueDate: v.optional(v.string()),
-    dueTime: v.optional(v.string()),
+    hasDueTime: v.boolean(),
   },
 
   handler: async (ctx, args) => {
@@ -16,21 +15,21 @@ export const addTask = mutation({
       throw Error("Not signed in");
     }
 
-    const id = await ctx.db.insert("tasks", {
+    await ctx.db.insert("tasks", {
       author: identity.tokenIdentifier,
       title: args.title,
       description: args.description,
       isCompleted: false,
       dueDate: args.dueDate,
-      dueTime: args.dueTime,
+      hasDueTime: args.hasDueTime,
     });
 
   },
 });
 
-export const getOverdueTasks = query({
+export const getTodayAndOverdueTasks = query({
   args: {
-    timeZone: v.optional(v.string()),
+    endOfLocalDay: v.string(),
   },
 
   handler: async (ctx, args) => {
@@ -38,54 +37,13 @@ export const getOverdueTasks = query({
     if (!identity) {
       throw Error("Not signed in");
     }
-    const tz = args.timeZone ?? "UTC";
-    const today = new Intl.DateTimeFormat("en-CA", {
-      timeZone: tz,
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    }).format(new Date()); // YYYY-MM-DD in the provided time zone
 
     const tasks = await ctx.db
       .query("tasks")
       .withIndex("by_author_isCompleted_dueDate", (q) =>
         q.eq("author", identity.tokenIdentifier)
           .eq("isCompleted", false)
-          .lt("dueDate", today))
-      .filter((q) => q.neq(q.field("dueDate"), undefined))
-      // Ordered by dueDate ascending (most urgent first), then by creation time
-      .order("asc")
-      .collect();
-    return tasks;
-  },
-});
-
-export const getTodayTasks = query({
-  args: {
-    timeZone: v.optional(v.string()),
-  },
-
-  handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw Error("Not signed in");
-    }
-    const tz = args.timeZone ?? "UTC";
-    const today = new Intl.DateTimeFormat("en-CA", {
-      timeZone: tz,
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    }).format(new Date()); // YYYY-MM-DD in the provided time zone
-
-    const tasks = await ctx.db
-      .query("tasks")
-      .withIndex("by_author_isCompleted_dueDate", (q) =>
-        q.eq("author", identity.tokenIdentifier)
-          .eq("isCompleted", false)
-          .eq("dueDate", today))
-      // Filter out tasks without a dueDate (redundant but explicit)
-      .filter((q) => q.neq(q.field("dueDate"), undefined))
+          .lt("dueDate", args.endOfLocalDay))
       // Ordered by dueTime if available, then by creation time
       .order("asc")
       .collect();
@@ -95,7 +53,7 @@ export const getTodayTasks = query({
 
 export const getUpcomingTasks = query({
   args: {
-    timeZone: v.optional(v.string()),
+    endOfLocalDay: v.string(),
   },
 
   handler: async (ctx, args) => {
@@ -104,20 +62,13 @@ export const getUpcomingTasks = query({
       throw Error("Not signed in");
     }
 
-    const tz = args.timeZone ?? "UTC";
-    const today = new Intl.DateTimeFormat("en-CA", {
-      timeZone: tz,
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    }).format(new Date()); // YYYY-MM-DD in provided time zone
 
     const tasks = await ctx.db
       .query("tasks")
       .withIndex("by_author_isCompleted_dueDate", (q) =>
         q.eq("author", identity.tokenIdentifier)
           .eq("isCompleted", false)
-          .gt("dueDate", today))
+          .gte("dueDate", args.endOfLocalDay))
       // Filter out tasks without a dueDate (they should be in unscheduled)
       .filter((q) => q.neq(q.field("dueDate"), undefined))
       // Show soonest first
@@ -238,7 +189,7 @@ export const updateTask = mutation({
     title: v.string(),
     description: v.string(),
     dueDate: v.optional(v.string()),
-    dueTime: v.optional(v.string()),
+    hasDueTime: v.boolean(),
   },
   returns: v.null(),
   handler: async (ctx, args) => {
@@ -261,7 +212,7 @@ export const updateTask = mutation({
       title: args.title,
       description: args.description,
       dueDate: args.dueDate,
-      dueTime: args.dueTime,
+      hasDueTime: args.hasDueTime,
     });
 
     return null;

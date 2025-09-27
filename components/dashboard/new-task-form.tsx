@@ -32,7 +32,7 @@ import {
 import { Calendar } from "@/components/ui/calendar";
 import { parseDate, parse } from "chrono-node";
 import { useEffect, useState, useRef } from "react";
-import { convertFromUtcToLocal, convertUtcTimeToLocalDate, formatTaskDateAndTime } from "@/utils/date-utils";
+import { formatTaskDateAndTime } from "@/utils/date-utils";
 import { Doc } from "@/convex/_generated/dataModel";
 
 type Task = Doc<"tasks">;
@@ -180,7 +180,8 @@ export function NewTaskForm({ onCancel, todayPrefill, editTask, isEditing }: New
       message: "Description must be less than 50 characters",
     }),
     dueDate: z.date().optional(),
-    dueTime: z.date().optional(),
+    dueTime: z.string(),
+    hasDueTime: z.boolean(),
   });
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -189,15 +190,14 @@ export function NewTaskForm({ onCancel, todayPrefill, editTask, isEditing }: New
       title: editTask?.title || "",
       description: editTask?.description || "",
       dueDate: editTask?.dueDate ? new Date(editTask.dueDate) : (todayPrefill ? new Date() : undefined),
-      dueTime: editTask?.dueTime ? convertUtcTimeToLocalDate(editTask.dueTime) : undefined,
+      dueTime: editTask?.hasDueTime && editTask.dueDate ? new Date(editTask.dueDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }) : "",
+      hasDueTime: editTask?.hasDueTime || false,
     },
   });
 
   const title = useWatch({ control: form.control, name: "title" });
   const [dateFromTitle, setDateFromTitle] = useState<boolean>(false);
-  const [localTimeString, setLocalTimeString] = useState<string | undefined>(
-    (editTask?.dueDate && editTask?.dueTime) ? convertFromUtcToLocal(editTask?.dueDate, editTask?.dueTime).localTimeString : undefined
-  );
+
   const [cleanTitle, setCleanTitle] = useState<string>("");
 
   useEffect(() => {
@@ -233,30 +233,27 @@ export function NewTaskForm({ onCancel, todayPrefill, editTask, isEditing }: New
 
         // If time is present, set dueTime as well
         if (bestResult.start.isCertain("hour")) {
-          const hour = bestResult.start.get("hour");
-          const minute = bestResult.start.get("minute") || 0;
-          setLocalTimeString(
-            hour!.toString().padStart(2, "0") +
-            ":" +
-            minute.toString().padStart(2, "0"),
-          );
-          const localDate = new Date();
-          localDate.setHours(hour!, minute, 0, 0);
-          form.setValue("dueTime", localDate);
+          form.setValue("hasDueTime", true);
+          const hours = date.getHours().toString().padStart(2, '0');
+          const minutes = date.getMinutes().toString().padStart(2, '0');
+          form.setValue("dueTime", `${hours}:${minutes}`);
         } else {
-          form.setValue("dueTime", undefined);
+          form.setValue("hasDueTime", false);
+          form.setValue("dueTime", "");
         }
         setDateFromTitle(true);
       } else if (dateFromTitle) {
         form.setValue("dueDate", undefined);
-        form.setValue("dueTime", undefined);
+        form.setValue("hasDueTime", false);
+        form.setValue("dueTime", "");
         setDateFromTitle(false);
         setCleanTitle("");
       }
     }
     if (!title && dateFromTitle) {
       form.setValue("dueDate", undefined);
-      form.setValue("dueTime", undefined);
+      form.setValue("hasDueTime", false);
+      form.setValue("dueTime", "");
       setDateFromTitle(false);
       setCleanTitle("");
     }
@@ -278,12 +275,6 @@ export function NewTaskForm({ onCancel, todayPrefill, editTask, isEditing }: New
   }, [isEditing, onCancel]);
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    const dateString = values.dueDate
-      ? values.dueDate.toISOString().split("T")[0]
-      : undefined;
-    const timeString = values.dueTime
-      ? values.dueTime.toISOString().split("T")[1]
-      : undefined;
 
     const finalTitle = cleanTitle || values.title;
 
@@ -292,16 +283,16 @@ export function NewTaskForm({ onCancel, todayPrefill, editTask, isEditing }: New
         taskId: editTask._id,
         title: finalTitle,
         description: values.description,
-        dueDate: dateString,
-        dueTime: dateString ? timeString : undefined,
+        dueDate: values.dueDate?.toISOString(),
+        hasDueTime: values.dueDate ? values.hasDueTime : false,
       });
       onCancel();
     } else {
       addTask({
         title: finalTitle,
         description: values.description,
-        dueDate: dateString,
-        dueTime: dateString ? timeString : undefined,
+        dueDate: values.dueDate?.toISOString(),
+        hasDueTime: values.dueDate ? values.hasDueTime : false,
       });
       form.reset();
       setCleanTitle("");
@@ -376,10 +367,7 @@ export function NewTaskForm({ onCancel, todayPrefill, editTask, isEditing }: New
                 >
                   <CalendarIcon />
                   {form.watch("dueDate")
-                    ? `${formatTaskDateAndTime(
-                      form.watch("dueDate")?.toISOString().split("T")[0],
-                      form.watch("dueTime") ? localTimeString : undefined
-                    )}`
+                    ? `${formatTaskDateAndTime(form.watch("dueDate"), form.watch("hasDueTime"))}`
                     : "Date"}
                 </Button>
               </DropdownMenuTrigger>
@@ -432,31 +420,22 @@ export function NewTaskForm({ onCancel, todayPrefill, editTask, isEditing }: New
                             type="time"
                             id="time-picker"
                             step="60"
-                            value={
-                              field.value instanceof Date
-                                ? field.value.toLocaleTimeString([], {
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                  hour12: false,
-                                })
-                                : ""
-                            }
+                            value={field.value || ""}
                             onChange={(e) => {
-                              setLocalTimeString(e.target.value);
+                              field.onChange(e.target.value);
                               if (!form.watch("dueDate")) {
                                 form.setValue("dueDate", new Date());
                               }
-                              const [hourStr, minuteStr] =
-                                e.target.value.split(":");
-                              const hour = parseInt(hourStr, 10);
-                              const minute = parseInt(minuteStr, 10);
-                              if (!isNaN(hour) && !isNaN(minute)) {
-                                // Create a Date object in local time
-                                const localDate = new Date();
-                                localDate.setHours(hour, minute, 0, 0);
-                                field.onChange(localDate);
-                              } else {
-                                field.onChange(undefined);
+                              form.setValue("hasDueTime", e.target.value !== "");
+                              const dueDate = form.watch("dueDate");
+                              if (dueDate && e.target.value) {
+                                const [hours, minutes] = e.target.value.split(":").map(Number);
+                                const updatedDate = new Date(dueDate);
+                                updatedDate.setHours(hours);
+                                updatedDate.setMinutes(minutes);
+                                updatedDate.setSeconds(0);
+                                updatedDate.setMilliseconds(0);
+                                form.setValue("dueDate", updatedDate);
                               }
                             }}
                           />
