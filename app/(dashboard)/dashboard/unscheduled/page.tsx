@@ -16,6 +16,9 @@ export default function Unscheduled() {
           <TaskComponent task={task} key={task._id} />
         ))
       )}
+      {unscheduledTasks && unscheduledTasks.length === 0 && !isLoading && (
+        <p className="my-4 text-gray-500">No unscheduled tasks!</p>
+      )}
       <NewTaskButton />
     </div>
   );

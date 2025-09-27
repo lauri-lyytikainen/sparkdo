@@ -15,6 +15,9 @@ export default function Completed() {
           <TaskComponent task={task} key={task._id} />
         ))
       )}
+      {completedTasks && completedTasks.length === 0 && !isLoading && (
+        <p className="my-4 text-gray-500">No completed tasks!</p>
+      )}
     </div>
   );
 }

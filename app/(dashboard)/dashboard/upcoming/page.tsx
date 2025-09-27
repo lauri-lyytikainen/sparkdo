@@ -16,6 +16,9 @@ export default function Upcoming() {
           <TaskComponent task={task} key={task._id} />
         ))
       )}
+      {upcomingTasks && upcomingTasks.length === 0 && !isLoading && (
+        <p className="my-4 text-gray-500">No upcoming tasks!</p>
+      )}
       <NewTaskButton />
     </div>
   );

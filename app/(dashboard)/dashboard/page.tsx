@@ -29,6 +29,9 @@ export default function Today() {
           <TaskComponent task={task} key={task._id} />
         ))
       )}
+      {todayTasks && todayTasks.length === 0 && overdueTasks && overdueTasks.length === 0 && !isLoading && (
+        <p className="my-4 text-gray-500">No tasks for today!</p>
+      )}
       <NewTaskButton todayPrefill={true} />
     </div>
   );
