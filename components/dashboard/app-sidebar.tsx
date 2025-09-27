@@ -28,10 +28,12 @@ import {
 import { useTaskContext } from "@/components/dashboard/task-provider";
 import NewTaskDialogButton from "@/components/dashboard/new-task-dialog-button";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useSidebar } from "@/components/ui/sidebar";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { unscheduledTaskCount, todayTaskCount, upcomingTaskCount } = useTaskContext();
   const isMobile = useIsMobile();
+  const { state } = useSidebar();
 
   const data = {
     user: {
@@ -104,7 +106,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
         <TeamSwitcher teams={data.teams} />
-        {!isMobile &&
+        {!isMobile && state == "expanded" &&
           <NewTaskDialogButton />
         }
       </SidebarHeader>
