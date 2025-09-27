@@ -25,6 +25,12 @@ export function useTasks(): UseTasksResult {
     return date.toISOString();
   }, []);
 
+  const startOfLocalDay = useMemo(() => {
+    const date = new Date();
+    date.setHours(0, 0, 0, 0);
+    return date.toISOString();
+  }, []);
+
   const endOfLocalDay = useMemo(() => {
     const date = new Date();
     date.setHours(0, 0, 0, 0);
@@ -57,18 +63,31 @@ export function useTasks(): UseTasksResult {
   const todayTasks = useMemo(() => {
     if (!todayAndOverdueTasks) return undefined;
     return todayAndOverdueTasks.filter(task => {
-      if (task.hasDueTime) {
-        return task.dueDate && task.dueDate >= nowMinute;
+      if (task.dueDate) {
+        if (task.dueDate < startOfLocalDay) {
+          return false;
+        }
+        if (task.hasDueTime) {
+          return task.dueDate >= nowMinute;
+        }
       }
-      return false;
+      return true;
     });
   }, [todayAndOverdueTasks, nowMinute]);
 
   const overdueTasks = useMemo(() => {
     if (!todayAndOverdueTasks) return undefined;
     return todayAndOverdueTasks.filter(task => {
-      if (!task.dueDate) return false;
-      return task.dueDate < nowMinute;
+      if (task.dueDate) {
+        if (task.dueDate < startOfLocalDay) {
+          return true;
+        }
+      }
+      if (task.hasDueTime) {
+        if (!task.dueDate) return false;
+        return task.dueDate < nowMinute;
+      }
+      return false;
     });
   }, [todayAndOverdueTasks, nowMinute]);
 

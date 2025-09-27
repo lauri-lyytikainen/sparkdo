@@ -244,3 +244,34 @@ export const deleteTask = mutation({
     return null;
   }
 });
+
+export const moveTaskToToday = mutation({
+  args: {
+    taskId: v.id("tasks"),
+    startOfLocalDay: v.string(),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw Error("Not signed in");
+    }
+
+    // First, verify the task exists and belongs to the user
+    const task = await ctx.db.get(args.taskId);
+    if (!task) {
+      throw new Error("Task not found");
+    }
+    if (task.author !== identity.tokenIdentifier) {
+      throw new Error("Unauthorized: Task does not belong to user");
+    }
+
+    // Update the task's dueDate to the provided startOfLocalDay
+    await ctx.db.patch(args.taskId, {
+      dueDate: args.startOfLocalDay,
+      hasDueTime: false, // Since we're moving to "Today", we set hasDueTime to false
+    });
+
+    return null;
+  }
+});

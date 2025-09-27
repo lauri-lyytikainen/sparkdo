@@ -25,6 +25,7 @@ export default function TaskComponent({ task, overdue }: { task: Task, overdue?:
   const uncompleteTaskMutation = useMutation(api.tasks.uncompleteTask);
   const { startEditing, stopEditing, isEditing } = useTaskContext();
   const deleteTaskMutation = useMutation(api.tasks.deleteTask);
+  const moveTaskToTodayMutation = useMutation(api.tasks.moveTaskToToday);
 
 
   function handleCheckboxChange() {
@@ -54,6 +55,12 @@ export default function TaskComponent({ task, overdue }: { task: Task, overdue?:
         />
       </div>
     );
+  }
+
+  function handleMoveToToday() {
+    const startOfLocalDay = new Date();
+    startOfLocalDay.setHours(0, 0, 0, 0);
+    moveTaskToTodayMutation({ taskId: task._id, startOfLocalDay: startOfLocalDay.toISOString() });
   }
 
   return (
@@ -88,12 +95,12 @@ export default function TaskComponent({ task, overdue }: { task: Task, overdue?:
         </Tooltip>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button size={"icon"} variant={"ghost"}>
+            <Button size={"icon"} variant={"ghost"} onClick={handleMoveToToday}>
               <Sun />
             </Button>
           </TooltipTrigger>
           <TooltipContent>
-            Set Due Date
+            Move to Today
           </TooltipContent>
         </Tooltip>
         <AlertDialog>

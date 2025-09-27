@@ -19,7 +19,9 @@ export default function Today() {
               <TaskComponent task={task} key={task._id} overdue />
             ))
           )}
-          <h2 className="text-xl font-bold my-2">Rest of todays tasks</h2>
+          {todayTasks && todayTasks.length > 0 && (
+            <h2 className="text-xl font-bold my-2">Rest of todays tasks</h2>
+          )}
         </>
       )}
       {!isLoading && (
