@@ -10,6 +10,7 @@ import {
   SidebarMenuBadge,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import Link from "next/link";
 
@@ -25,6 +26,7 @@ export function NavMain({
   }[];
 }) {
   const pathname = usePathname();
+  const { isMobile, setOpenMobile } = useSidebar();
 
   return (
     <SidebarGroup>
@@ -33,10 +35,16 @@ export function NavMain({
         {items.map((item, index) => {
           const isActive = pathname === item.url;
 
+          const handleClick = () => {
+            if (isMobile) {
+              setOpenMobile(false);
+            }
+          };
+
           return (
             <SidebarMenuItem key={index}>
               <SidebarMenuButton asChild isActive={isActive}>
-                <Link href={item.url} className="flex">
+                <Link href={item.url} className="flex" onClick={handleClick}>
                   {item.icon && (
                     <item.icon />
                   )}
