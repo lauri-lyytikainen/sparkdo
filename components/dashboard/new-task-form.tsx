@@ -161,9 +161,10 @@ interface NewTaskFormProps {
   todayPrefill?: boolean;
   editTask?: Task;
   isEditing?: boolean;
+  isModal?: boolean;
 }
 
-export function NewTaskForm({ onCancel, todayPrefill, editTask, isEditing }: NewTaskFormProps) {
+export function NewTaskForm({ onCancel, todayPrefill, editTask, isEditing, isModal }: NewTaskFormProps) {
   const addTask = useMutation(api.tasks.addTask);
   const updateTask = useMutation(api.tasks.updateTask);
 
@@ -300,6 +301,9 @@ export function NewTaskForm({ onCancel, todayPrefill, editTask, isEditing }: New
         form.setValue("dueDate", new Date());
       }
     }
+    if (isModal) {
+      onCancel();
+    }
   }
 
   function setDateToParsedDate(text: string) {
@@ -315,7 +319,7 @@ export function NewTaskForm({ onCancel, todayPrefill, editTask, isEditing }: New
         onSubmit={form.handleSubmit(onSubmit)}
         className="flex flex-1 flex-col bg-card rounded-xl border p-2 gap-2"
       >
-        <div>
+        <div className={isModal ? "pr-10" : ""}>
           <FormField
             control={form.control}
             name="title"
@@ -475,21 +479,17 @@ export function NewTaskForm({ onCancel, todayPrefill, editTask, isEditing }: New
                 </SelectItem>
               </SelectContent>
             </Select>
+          </div>
+          <div className="flex gap-2">
             <Button
               size={"sm"}
               variant={"outline"}
-              className="text-muted-foreground"
-              disabled
+              type="button"
+              onClick={() => {
+                onCancel();
+                setCleanTitle("");
+              }}
             >
-              <AlarmClock />
-              Reminders
-            </Button>
-          </div>
-          <div className="flex gap-2">
-            <Button size={"sm"} variant={"outline"} onClick={() => {
-              onCancel();
-              setCleanTitle("");
-            }}>
               Cancel
             </Button>
             <Button size={"sm"} type={"submit"}>

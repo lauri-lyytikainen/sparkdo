@@ -45,6 +45,7 @@ export const getTodayAndOverdueTasks = query({
           .eq("isCompleted", false)
           .lt("dueDate", args.endOfLocalDay))
       // Ordered by dueTime if available, then by creation time
+      .filter((q) => q.neq(q.field("dueDate"), undefined))
       .order("asc")
       .collect();
     return tasks;
