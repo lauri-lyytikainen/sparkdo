@@ -6,13 +6,14 @@ import { Button } from "@/components/ui/button";
 import { useConvexAuth } from "convex/react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Loader2Icon } from "lucide-react";
+import Image from "next/image";
 
 export default function Header() {
   const { isLoading } = useConvexAuth();
   return (
     <header className="w-full flex justify-between items-center p-2">
       <Link href="/" className="flex items-center gap-2">
-        <p>Logo</p>
+        <Image src="/sparkdo.svg" alt="Logo" width={32} height={32} className="rounded-md" />
         <h2 className="text-2xl font-bold">Sparkdo</h2>
       </Link>
       <div className="flex items-center gap-2">
