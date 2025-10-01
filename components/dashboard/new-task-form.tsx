@@ -323,7 +323,7 @@ export function NewTaskForm({ onCancel, todayPrefill, editTask, isEditing, isMod
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className="flex flex-1 flex-col bg-card rounded-xl border p-2 gap-2"
+        className="flex flex-1 flex-col bg-card rounded-xl border p-3 gap-1"
       >
         <div className={isModal ? "pr-10" : ""}>
           <FormField
