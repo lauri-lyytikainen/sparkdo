@@ -7,6 +7,7 @@ export const addTask = mutation({
     description: v.string(),
     dueDate: v.optional(v.string()),
     hasDueTime: v.boolean(),
+    priority: v.union(v.literal(1), v.literal(2), v.literal(3), v.literal(4)),
   },
 
   handler: async (ctx, args) => {
@@ -22,6 +23,7 @@ export const addTask = mutation({
       isCompleted: false,
       dueDate: args.dueDate,
       hasDueTime: args.hasDueTime,
+      priority: args.priority,
     });
 
   },
@@ -191,6 +193,7 @@ export const updateTask = mutation({
     description: v.string(),
     dueDate: v.optional(v.string()),
     hasDueTime: v.boolean(),
+    priority: v.union(v.literal(1), v.literal(2), v.literal(3), v.literal(4)),
   },
   returns: v.null(),
   handler: async (ctx, args) => {
@@ -214,6 +217,7 @@ export const updateTask = mutation({
       description: args.description,
       dueDate: args.dueDate,
       hasDueTime: args.hasDueTime,
+      priority: args.priority,
     });
 
     return null;

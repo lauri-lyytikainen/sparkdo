@@ -10,6 +10,7 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog"
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
+import { DialogDescription } from "@radix-ui/react-dialog";
 
 export default function NewTaskDialogButton({ todayPrefill }: { todayPrefill?: boolean }) {
     const [formShown, setFormShown] = useState(false);
@@ -28,6 +29,7 @@ export default function NewTaskDialogButton({ todayPrefill }: { todayPrefill?: b
             <DialogContent className="p-0 border-none rounded-xl">
                 <VisuallyHidden>
                     <DialogTitle>Add New Task</DialogTitle>
+                    <DialogDescription>Fill the form to add a new task</DialogDescription>
                 </VisuallyHidden>
                 <NewTaskForm onCancel={() => setFormShown(false)} todayPrefill={todayPrefill} isModal />
             </DialogContent>

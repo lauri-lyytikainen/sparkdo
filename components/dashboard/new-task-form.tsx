@@ -183,6 +183,7 @@ export function NewTaskForm({ onCancel, todayPrefill, editTask, isEditing, isMod
     dueDate: z.date().optional(),
     dueTime: z.string(),
     hasDueTime: z.boolean(),
+    priority: z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4)]),
   });
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -193,6 +194,7 @@ export function NewTaskForm({ onCancel, todayPrefill, editTask, isEditing, isMod
       dueDate: editTask?.dueDate ? new Date(editTask.dueDate) : (todayPrefill ? new Date() : undefined),
       dueTime: editTask?.hasDueTime && editTask.dueDate ? new Date(editTask.dueDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }) : "",
       hasDueTime: editTask?.hasDueTime || false,
+      priority: editTask?.priority !== undefined ? editTask.priority : 4,
     },
   });
 
@@ -286,6 +288,7 @@ export function NewTaskForm({ onCancel, todayPrefill, editTask, isEditing, isMod
         description: values.description,
         dueDate: values.dueDate?.toISOString(),
         hasDueTime: values.dueDate ? values.hasDueTime : false,
+        priority: values.priority,
       });
       onCancel();
     } else {
@@ -294,6 +297,7 @@ export function NewTaskForm({ onCancel, todayPrefill, editTask, isEditing, isMod
         description: values.description,
         dueDate: values.dueDate?.toISOString(),
         hasDueTime: values.dueDate ? values.hasDueTime : false,
+        priority: values.priority,
       });
       form.reset();
       setCleanTitle("");
@@ -453,34 +457,50 @@ export function NewTaskForm({ onCancel, todayPrefill, editTask, isEditing, isMod
                 </DropdownMenuLabel>
               </DropdownMenuContent>
             </DropdownMenu>
+            <FormField
+              control={form.control}
+              name="priority"
+              render={({ field }) => (
 
-            <Select defaultValue="priority4">
-              <SelectTrigger size={"sm"}>
-                <SelectValue placeholder="Priority" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="priority1">
-                  <Flag
-                    fill="red"
-                    color="red"
-                    className="fill-red-500 text-red-500"
-                  />
-                  Priority 1
-                </SelectItem>
-                <SelectItem value="priority2">
-                  <Flag className="fill-amber-500 text-amber-500" />
-                  Priority 2
-                </SelectItem>
-                <SelectItem value="priority3">
-                  <Flag className="fill-blue-500 text-blue-500" />
-                  Priority 3
-                </SelectItem>
-                <SelectItem value="priority4">
-                  <Flag />
-                  Priority 4
-                </SelectItem>
-              </SelectContent>
-            </Select>
+                <FormItem>
+                  <FormControl>
+                    <Select defaultValue="priority4"
+                      onValueChange={(value) => field.onChange(parseInt(value))}
+                      value={field.value?.toString()}
+                    >
+                      <SelectTrigger size={"sm"}>
+                        <SelectValue placeholder="Priority" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="1">
+                          <Flag
+                            fill="red"
+                            color="red"
+                            className="fill-red-500 text-red-500"
+                          />
+                          Priority 1
+                        </SelectItem>
+                        <SelectItem value="2">
+                          <Flag className="fill-amber-500 text-amber-500" />
+                          Priority 2
+                        </SelectItem>
+                        <SelectItem value="3">
+                          <Flag className="fill-blue-500 text-blue-500" />
+                          Priority 3
+                        </SelectItem>
+                        <SelectItem value="4">
+                          <Flag />
+                          Priority 4
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+
           </div>
           <div className="flex gap-2">
             <Button

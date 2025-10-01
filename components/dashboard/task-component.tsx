@@ -3,7 +3,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 type Task = Doc<"tasks">;
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { Calendar, Pen, Sun, Trash } from "lucide-react";
+import { Calendar, Flag, Pen, Sun, Trash } from "lucide-react";
 import { formatTaskDateAndTime } from "@/utils/date-utils";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -14,6 +14,7 @@ import {
   AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
+  AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
@@ -81,58 +82,71 @@ export default function TaskComponent({ task, overdue }: { task: Task, overdue?:
             </p>
           </div>
         )}
+
       </div>
-      <div className="flex items-start h-full opacity-0 group-hover:opacity-100 transition-opacity">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button size={"icon"} variant={"ghost"} onClick={handleEditClick}>
-              <Pen />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            Edit Task
-          </TooltipContent>
-        </Tooltip>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button size={"icon"} variant={"ghost"} onClick={handleMoveToToday}>
-              <Sun />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            Move to Today
-          </TooltipContent>
-        </Tooltip>
-        <AlertDialog>
+      <div className="flex flex-col items-end">
+        <div className="flex items-start opacity-0 group-hover:opacity-100 transition-opacity">
           <Tooltip>
             <TooltipTrigger asChild>
-              <AlertDialogTrigger asChild>
-                <Button size={"icon"} variant={"ghost"}>
-                  <Trash />
-                </Button>
-              </AlertDialogTrigger>
+              <Button size={"icon"} variant={"ghost"} onClick={handleEditClick}>
+                <Pen />
+              </Button>
             </TooltipTrigger>
             <TooltipContent>
-              Delete Task
+              Edit Task
             </TooltipContent>
           </Tooltip>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>
-                Are you sure you want to delete &quot;{task.title}&quot; task?
-              </AlertDialogTitle>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={() => {
-                deleteTaskMutation({ taskId: task._id });
-              }}>
-                Delete
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button size={"icon"} variant={"ghost"} onClick={handleMoveToToday}>
+                <Sun />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              Move to Today
+            </TooltipContent>
+          </Tooltip>
+          <AlertDialog>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <AlertDialogTrigger asChild>
+                  <Button size={"icon"} variant={"ghost"}>
+                    <Trash />
+                  </Button>
+                </AlertDialogTrigger>
+              </TooltipTrigger>
+              <TooltipContent>
+                Delete Task
+              </TooltipContent>
+            </Tooltip>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>
+                  Are you sure you want to delete &quot;{task.title}&quot; task?
+                </AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={() => {
+                  deleteTaskMutation({ taskId: task._id });
+                }}>
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
+        {task.priority !== 4 && (
+          <div className="flex items-center gap-1">
+            <Flag className={`w-4 ${task.priority === 1 ? "text-red-500" : task.priority === 2 ? "text-amber-500" : "text-blue-500"}`} />
+            <p className="text-xs">{task.priority}</p>
+          </div>
+        )}
       </div>
+
     </div>
   )
 }
