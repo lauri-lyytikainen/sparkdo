@@ -64,7 +64,7 @@ export default function TaskComponent({ task, overdue }: { task: Task, overdue?:
   }
 
   return (
-    <div className="rounded p-2 my-2 flex gap-4 items-stretch border-b group">
+    <div className="p-2 my-2 flex gap-4 items-stretch border-b group">
       <Checkbox checked={task.isCompleted} onClick={handleCheckboxChange} className="mt-2" />
       <div className="flex-col justify-between items-center flex-1">
         <h2 className={`text-lg font-semibold ${overdue ? "text-red-500" : ""}`}>

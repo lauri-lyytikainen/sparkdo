@@ -117,7 +117,7 @@ function StyledTitleInput({
           {segments.map((segment, index) => (
             <span
               key={index}
-              className={segment.isTime ? 'text-blue-600 bg-blue-100 px-1 p-0 rounded-sm font-medium' : 'text-current'}
+              className={segment.isTime ? 'text-secondary-foreground bg-secondary px-1 p-0 rounded-sm font-medium' : 'text-current'}
             >
               {segment.text}
             </span>
@@ -310,6 +310,8 @@ export function NewTaskForm({ onCancel, todayPrefill, editTask, isEditing, isMod
     const parsedDate = parseDate(text, new Date(), { forwardDate: true });
     if (parsedDate) {
       form.setValue("dueDate", parsedDate);
+      form.setValue("hasDueTime", false);
+      form.setValue("dueTime", "");
     }
   }
 
