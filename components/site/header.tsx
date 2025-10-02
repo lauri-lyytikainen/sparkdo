@@ -13,40 +13,49 @@ export default function Header() {
   const { isLoading } = useConvexAuth();
   const isMobile = useIsMobile();
   return (
-    <header className="w-full flex justify-between items-center p-2">
-      <Link href="/" className="flex items-center gap-2">
-        <Image src="/sparkdo.svg" alt="Logo" width={32} height={32} className="rounded-md" />
-        <h2 className="text-2xl font-bold">Sparkdo</h2>
-      </Link>
-      <div className="flex items-center gap-2">
-        <Authenticated>
-          <Link href="/dashboard">
-            <Button variant="outline" size={"sm"}>
-              Dashboard
-            </Button>
-          </Link>
-          <UserButton showName={isMobile ? false : true} userProfileUrl="/account" />
-        </Authenticated>
-        {isLoading && (
-          <>
-            <Button variant="outline" size="sm" disabled>
-              <Loader2Icon className="animate-spin" />
-              Dashboard
-            </Button>
-            {!isMobile && (
-              <Skeleton className="h-4 w-32" />
-            )}
-            <Skeleton className="h-8 w-8 rounded-full" />
-          </>
-        )}
-        <Unauthenticated>
-          <Link href={"/auth/sign-in"}>
-            <Button variant={"outline"}>Sign In</Button>
-          </Link>
-          <Link href={"/auth/sign-up"}>
-            <Button>Sign Up</Button>
-          </Link>
-        </Unauthenticated>
+    <header className="w-full sticky top-0 bg-background z-10 border-b">
+      <div className="flex justify-between items-center p-4 max-w-7xl mx-auto">
+        <Link href="/" className="flex items-center gap-2">
+          <Image
+            src="/sparkdo.svg"
+            alt="Logo"
+            width={32}
+            height={32}
+            className="rounded-md"
+          />
+          <h2 className="text-2xl font-bold">Sparkdo</h2>
+        </Link>
+        <div className="flex items-center gap-2">
+          <Authenticated>
+            <Link href="/dashboard">
+              <Button variant="outline" size={"sm"}>
+                Dashboard
+              </Button>
+            </Link>
+            <UserButton
+              showName={isMobile ? false : true}
+              userProfileUrl="/account"
+            />
+          </Authenticated>
+          {isLoading && (
+            <>
+              <Button variant="outline" size="sm" disabled>
+                <Loader2Icon className="animate-spin" />
+                Dashboard
+              </Button>
+              {!isMobile && <Skeleton className="h-4 w-32" />}
+              <Skeleton className="h-8 w-8 rounded-full" />
+            </>
+          )}
+          <Unauthenticated>
+            <Link href={"/auth/sign-in"}>
+              <Button variant={"outline"}>Sign In</Button>
+            </Link>
+            <Link href={"/auth/sign-up"}>
+              <Button>Sign Up</Button>
+            </Link>
+          </Unauthenticated>
+        </div>
       </div>
     </header>
   );
