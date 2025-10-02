@@ -7,9 +7,11 @@ import { useConvexAuth } from "convex/react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Loader2Icon } from "lucide-react";
 import Image from "next/image";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function Header() {
   const { isLoading } = useConvexAuth();
+  const isMobile = useIsMobile();
   return (
     <header className="w-full flex justify-between items-center p-2">
       <Link href="/" className="flex items-center gap-2">
@@ -23,7 +25,7 @@ export default function Header() {
               Dashboard
             </Button>
           </Link>
-          <UserButton showName={true} userProfileUrl="/account" />
+          <UserButton showName={isMobile ? false : true} userProfileUrl="/account" />
         </Authenticated>
         {isLoading && (
           <>
@@ -31,7 +33,9 @@ export default function Header() {
               <Loader2Icon className="animate-spin" />
               Dashboard
             </Button>
-            <Skeleton className="h-4 w-32" />
+            {!isMobile && (
+              <Skeleton className="h-4 w-32" />
+            )}
             <Skeleton className="h-8 w-8 rounded-full" />
           </>
         )}

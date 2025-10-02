@@ -4,7 +4,9 @@ import { Authenticated } from "convex/react";
 export default function UserProfileView() {
   return (
     <Authenticated>
-      <UserProfile />
+      <div className="flex flex-1 justify-center items-center">
+        <UserProfile />
+      </div>
     </Authenticated>
   );
 }
