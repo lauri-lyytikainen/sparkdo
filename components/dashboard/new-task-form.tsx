@@ -39,11 +39,29 @@ type Task = Doc<"tasks">;
 
 function getTimeExpressions(text: string, referenceDate: Date) {
   const results = parse(text, referenceDate, { forwardDate: true });
-  return results.map(result => ({
+  return results.map((result) => ({
     start: result.index,
     end: result.index + result.text.length,
-    text: result.text
+    text: result.text,
   }));
+}
+
+function getPriorityExpressions(text: string) {
+  const words = text.split(" ");
+  const expressions: Array<{ start: number; end: number; text: string }> = [];
+  let currentIndex = 0;
+
+  words.forEach((word) => {
+    const lowerWord = word.toLowerCase();
+    if (["p1", "p2", "p3", "p4"].includes(lowerWord)) {
+      const start = currentIndex;
+      const end = currentIndex + word.length;
+      expressions.push({ start, end, text: word });
+    }
+    currentIndex += word.length + 1; // +1 for the space
+  });
+
+  return expressions;
 }
 
 function handleEnterKeySubmit(e: React.KeyboardEvent<HTMLInputElement>) {
@@ -60,36 +78,44 @@ function StyledTitleInput({
   value,
   onChange,
   timeExpressions,
+  priorityExpressions,
   ...props
 }: {
   value: string;
   onChange: (value: string) => void;
   timeExpressions: Array<{ start: number; end: number; text: string }>;
+  priorityExpressions: Array<{ start: number; end: number; text: string }>;
 } & React.InputHTMLAttributes<HTMLInputElement>) {
   const [isEditing, setIsEditing] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const createStyledSegments = () => {
-    if (!value || timeExpressions.length === 0) {
-      return [{ text: value || '', isTime: false }];
+    if (
+      !value ||
+      (timeExpressions.length === 0 && priorityExpressions.length === 0)
+    ) {
+      return [{ text: value || "", isTime: false }];
     }
 
     const segments = [];
     let currentIndex = 0;
 
-    const sortedExpressions = [...timeExpressions].sort((a, b) => a.start - b.start);
+    const sortedExpressions = [...timeExpressions, ...priorityExpressions].sort(
+      (a, b) => a.start - b.start,
+    );
 
-    sortedExpressions.forEach(expr => {
+    sortedExpressions.forEach((expr) => {
       if (currentIndex < expr.start) {
+        // Push all characters between segments, including spaces
         segments.push({
-          text: value.substring(currentIndex, expr.start),
-          isTime: false
+          text: value.slice(currentIndex, expr.start),
+          isTime: false,
         });
       }
 
       segments.push({
-        text: expr.text,
-        isTime: true
+        text: value.slice(expr.start, expr.end),
+        isTime: true,
       });
 
       currentIndex = expr.end;
@@ -97,8 +123,8 @@ function StyledTitleInput({
 
     if (currentIndex < value.length) {
       segments.push({
-        text: value.substring(currentIndex),
-        isTime: false
+        text: value.slice(currentIndex),
+        isTime: false,
       });
     }
 
@@ -109,23 +135,28 @@ function StyledTitleInput({
 
   return (
     <div className="relative">
-      {/* Styled display overlay - always visible when there are time expressions */}
-      {value && timeExpressions.length > 0 && (
-        <div
-          className={`${props.className} absolute inset-0 flex items-center pointer-events-none`}
-        >
-          {segments.map((segment, index) => (
-            <span
-              key={index}
-              className={segment.isTime ? 'text-secondary-foreground bg-secondary px-1 p-0 rounded-sm font-medium' : 'text-current'}
-            >
-              {segment.text}
-            </span>
-          ))}
-        </div>
-      )}
+      {/* Styled display overlay - always visible when there are time/priority expressions */}
+      {value &&
+        (timeExpressions.length > 0 || priorityExpressions.length > 0) && (
+          <div
+            className={`absolute inset-0 flex items-center pointer-events-none border-b border-muted ${props.className}`}
+            style={{ padding: 0, margin: 0 }}
+          >
+            {segments.map((segment, index) => (
+              <span
+                key={index}
+                className={`${
+                  segment.isTime
+                    ? "text-secondary-foreground bg-secondary rounded-sm font-bold"
+                    : "text-current font-bold"
+                } p-0 m-0 whitespace-pre`}
+              >
+                {segment.text}
+              </span>
+            ))}
+          </div>
+        )}
 
-      {/* Actual input - transparent background to show styled overlay underneath */}
       <input
         {...props}
         ref={inputRef}
@@ -133,25 +164,24 @@ function StyledTitleInput({
         onChange={(e) => onChange(e.target.value)}
         onFocus={() => setIsEditing(true)}
         onBlur={() => setIsEditing(false)}
-        className={`${props.className} relative z-10 ${timeExpressions.length > 0 ? 'text-transparent' : ''}`}
-        style={{
-          caretColor: 'black'
-        }}
+        className={`${props.className} relative z-10 caret-black bg-transparent border-none p-0 m-0 font-bold
+        ${timeExpressions.length > 0 || priorityExpressions.length > 0 ? "text-transparent" : ""}`}
         onKeyDown={handleEnterKeySubmit}
       />
 
-      {/* Clickable overlay when not editing */}
-      {!isEditing && value && timeExpressions.length > 0 && (
-        <div
-          className="absolute inset-0 cursor-text"
-          onClick={() => {
-            if (inputRef.current) {
-              inputRef.current.focus();
-              setIsEditing(true);
-            }
-          }}
-        />
-      )}
+      {!isEditing &&
+        value &&
+        (timeExpressions.length > 0 || priorityExpressions.length > 0) && (
+          <div
+            className="absolute inset-0 cursor-text"
+            onClick={() => {
+              if (inputRef.current) {
+                inputRef.current.focus();
+                setIsEditing(true);
+              }
+            }}
+          />
+        )}
     </div>
   );
 }
@@ -164,7 +194,13 @@ interface NewTaskFormProps {
   isModal?: boolean;
 }
 
-export function NewTaskForm({ onCancel, todayPrefill, editTask, isEditing, isModal }: NewTaskFormProps) {
+export function NewTaskForm({
+  onCancel,
+  todayPrefill,
+  editTask,
+  isEditing,
+  isModal,
+}: NewTaskFormProps) {
   const addTask = useMutation(api.tasks.addTask);
   const updateTask = useMutation(api.tasks.updateTask);
 
@@ -191,8 +227,19 @@ export function NewTaskForm({ onCancel, todayPrefill, editTask, isEditing, isMod
     defaultValues: {
       title: editTask?.title || "",
       description: editTask?.description || "",
-      dueDate: editTask?.dueDate ? new Date(editTask.dueDate) : (todayPrefill ? new Date() : undefined),
-      dueTime: editTask?.hasDueTime && editTask.dueDate ? new Date(editTask.dueDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }) : "",
+      dueDate: editTask?.dueDate
+        ? new Date(editTask.dueDate)
+        : todayPrefill
+          ? new Date()
+          : undefined,
+      dueTime:
+        editTask?.hasDueTime && editTask.dueDate
+          ? new Date(editTask.dueDate).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+              hour12: false,
+            })
+          : "",
       hasDueTime: editTask?.hasDueTime || false,
       priority: editTask?.priority !== undefined ? editTask.priority : 4,
     },
@@ -200,31 +247,73 @@ export function NewTaskForm({ onCancel, todayPrefill, editTask, isEditing, isMod
 
   const title = useWatch({ control: form.control, name: "title" });
   const [dateFromTitle, setDateFromTitle] = useState<boolean>(false);
+  const [priorityFromTitle, setPriorityFromTitle] = useState<boolean>(false);
 
   const [cleanTitle, setCleanTitle] = useState<string>("");
 
   useEffect(() => {
     if (title) {
       const results = parse(title, new Date(), { forwardDate: true });
+      const priorityResults = title
+        .split(" ")
+        .filter((word) =>
+          ["p1", "p2", "p3", "p4"].includes(word.toLowerCase()),
+        );
+
+      // Handle priority tags
+      if (priorityResults.length > 0) {
+        const priorityStr = priorityResults[0]?.slice(1);
+        const priorityNum = Number(priorityStr);
+        if ([1, 2, 3, 4].includes(priorityNum)) {
+          form.setValue("priority", priorityNum as 1 | 2 | 3 | 4);
+          setPriorityFromTitle(true);
+        }
+
+        // If there are no date results, create a clean title by removing priority tags
+        if (results.length === 0) {
+          let cleanTitleText = title;
+          priorityResults.forEach((word: string) => {
+            cleanTitleText = cleanTitleText.replace(word, "").trim();
+          });
+          cleanTitleText = cleanTitleText.replace(/\s+/g, " ").trim();
+          setCleanTitle(cleanTitleText);
+        }
+      } else {
+        if (priorityFromTitle) {
+          form.setValue("priority", 4);
+          setPriorityFromTitle(false);
+        }
+      }
       // If we found a date, set it as dueDate
       if (results.length > 0) {
         // Create clean title by removing time expressions
         let titleWithoutTime = title;
 
         // Loop through all results to remove all time expressions
-        results.forEach(result => {
-          const timeText = title.substring(result.index, result.index + result.text.length);
-          titleWithoutTime = titleWithoutTime.replace(timeText, '').trim();
+        results.forEach((result) => {
+          const timeText = title.substring(
+            result.index,
+            result.index + result.text.length,
+          );
+          titleWithoutTime = titleWithoutTime.replace(timeText, "").trim();
+        });
+
+        // Remove priority tags (p1, p2, p3, p4)
+        priorityResults.forEach((word) => {
+          titleWithoutTime = titleWithoutTime.replace(word, "").trim();
         });
 
         // Clean up extra spaces
-        titleWithoutTime = titleWithoutTime.replace(/\s+/g, ' ').trim();
+        titleWithoutTime = titleWithoutTime.replace(/\s+/g, " ").trim();
         setCleanTitle(titleWithoutTime);
 
         // Find the most complete result (with most date/time information)
         const bestResult = results.reduce((best, current) => {
           // Prefer results with time information
-          if (current.start.isCertain("hour") && !best.start.isCertain("hour")) {
+          if (
+            current.start.isCertain("hour") &&
+            !best.start.isCertain("hour")
+          ) {
             return current;
           }
           // If both or neither have time, prefer the first one (usually most complete)
@@ -237,48 +326,55 @@ export function NewTaskForm({ onCancel, todayPrefill, editTask, isEditing, isMod
         // If time is present, set dueTime as well
         if (bestResult.start.isCertain("hour")) {
           form.setValue("hasDueTime", true);
-          const hours = date.getHours().toString().padStart(2, '0');
-          const minutes = date.getMinutes().toString().padStart(2, '0');
+          const hours = date.getHours().toString().padStart(2, "0");
+          const minutes = date.getMinutes().toString().padStart(2, "0");
           form.setValue("dueTime", `${hours}:${minutes}`);
         } else {
           form.setValue("hasDueTime", false);
           form.setValue("dueTime", "");
         }
         setDateFromTitle(true);
-      } else if (dateFromTitle) {
+      } else {
+        if (dateFromTitle) {
+          form.setValue("dueDate", undefined);
+          form.setValue("hasDueTime", false);
+          form.setValue("dueTime", "");
+          setDateFromTitle(false);
+          setCleanTitle("");
+        }
+      }
+    }
+    if (!title) {
+      if (dateFromTitle) {
         form.setValue("dueDate", undefined);
         form.setValue("hasDueTime", false);
         form.setValue("dueTime", "");
         setDateFromTitle(false);
-        setCleanTitle("");
       }
-    }
-    if (!title && dateFromTitle) {
-      form.setValue("dueDate", undefined);
-      form.setValue("hasDueTime", false);
-      form.setValue("dueTime", "");
-      setDateFromTitle(false);
+      if (priorityFromTitle) {
+        form.setValue("priority", 4);
+        setPriorityFromTitle(false);
+      }
       setCleanTitle("");
     }
-  }, [title, dateFromTitle, form]);
+  }, [title, dateFromTitle, priorityFromTitle, form]);
 
   useEffect(() => {
     if (!isEditing) return;
 
     function handleEscapeKey(event: KeyboardEvent) {
-      if (event.key === 'Escape') {
+      if (event.key === "Escape") {
         onCancel();
       }
     }
-    document.addEventListener('keydown', handleEscapeKey);
+    document.addEventListener("keydown", handleEscapeKey);
 
     return () => {
-      document.removeEventListener('keydown', handleEscapeKey);
+      document.removeEventListener("keydown", handleEscapeKey);
     };
   }, [isEditing, onCancel]);
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-
     const finalTitle = cleanTitle || values.title;
 
     if (isEditing && editTask) {
@@ -338,7 +434,11 @@ export function NewTaskForm({ onCancel, todayPrefill, editTask, isEditing, isMod
                     autoFocus
                     value={field.value}
                     onChange={field.onChange}
-                    timeExpressions={getTimeExpressions(field.value, new Date())}
+                    timeExpressions={getTimeExpressions(
+                      field.value,
+                      new Date(),
+                    )}
+                    priorityExpressions={getPriorityExpressions(field.value)}
                   />
                 </FormControl>
 
@@ -436,10 +536,15 @@ export function NewTaskForm({ onCancel, todayPrefill, editTask, isEditing, isMod
                               if (!form.watch("dueDate")) {
                                 form.setValue("dueDate", new Date());
                               }
-                              form.setValue("hasDueTime", e.target.value !== "");
+                              form.setValue(
+                                "hasDueTime",
+                                e.target.value !== "",
+                              );
                               const dueDate = form.watch("dueDate");
                               if (dueDate && e.target.value) {
-                                const [hours, minutes] = e.target.value.split(":").map(Number);
+                                const [hours, minutes] = e.target.value
+                                  .split(":")
+                                  .map(Number);
                                 const updatedDate = new Date(dueDate);
                                 updatedDate.setHours(hours);
                                 updatedDate.setMinutes(minutes);
@@ -461,10 +566,10 @@ export function NewTaskForm({ onCancel, todayPrefill, editTask, isEditing, isMod
               control={form.control}
               name="priority"
               render={({ field }) => (
-
                 <FormItem>
                   <FormControl>
-                    <Select defaultValue="priority4"
+                    <Select
+                      defaultValue="priority4"
                       onValueChange={(value) => field.onChange(parseInt(value))}
                       value={field.value?.toString()}
                     >
@@ -499,8 +604,6 @@ export function NewTaskForm({ onCancel, todayPrefill, editTask, isEditing, isMod
                 </FormItem>
               )}
             />
-
-
           </div>
           <div className="flex gap-2">
             <Button
