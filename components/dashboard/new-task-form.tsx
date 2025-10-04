@@ -64,6 +64,22 @@ function getPriorityExpressions(text: string) {
   return expressions;
 }
 
+function getRandomPlaceholder() {
+  const placeholders = [
+    "Check notes before meeting Friday",
+    "Buy groceries for dinner",
+    "Prepare presentation for Monday",
+    "Call the bank about the new card",
+    "Schedule annual health check-up",
+    "Plan a weekend trip with friends",
+    "Finish reading the new book",
+    "Organize workspace and declutter",
+    "Update resume and LinkedIn profile",
+    "Research for the upcoming project",
+  ];
+  return placeholders[Math.floor(Math.random() * placeholders.length)];
+}
+
 function handleEnterKeySubmit(e: React.KeyboardEvent<HTMLInputElement>) {
   if (e.key === "Enter") {
     e.preventDefault();
@@ -430,7 +446,7 @@ export function NewTaskForm({
                 <FormControl>
                   <StyledTitleInput
                     className="p-0 border-none shadow-none font-semibold focus:border-transparent focus:ring-0 focus:outline-none focus-visible:border-transparent focus-visible:ring-0 focus-visible:outline-none w-full"
-                    placeholder="Check notes before meeting Friday"
+                    placeholder={getRandomPlaceholder()}
                     autoFocus
                     value={field.value}
                     onChange={field.onChange}
